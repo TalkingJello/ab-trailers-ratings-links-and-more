@@ -1,4 +1,5 @@
 import { UNIQUE } from "../constants";
+import { log } from "../helpers/log";
 
 export enum VideoSite {
   YouTube = "YouTube",
@@ -66,6 +67,7 @@ export abstract class MetadataProvider {
   }
 
   insertScore(parent: JQuery<HTMLElement>, score: Score) {
+    log("insertScore", this.name, score);
     return;
   }
 

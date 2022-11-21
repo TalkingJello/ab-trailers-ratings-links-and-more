@@ -16,6 +16,7 @@ export async function injectRatingsToPage(providers: MetadataProvider[]) {
     .parent()
     .parent();
   const { container, body } = pageSection("Ratings");
+  body.css("gap", "18px");
   synopsis.after(container);
 
   res.forEach((r) => {

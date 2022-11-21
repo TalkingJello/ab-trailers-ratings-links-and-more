@@ -1,7 +1,8 @@
 import { TMDB_LANGUAGE, UNIQUE } from "../constants";
+import { ratingBox } from "../dom/ratingBox";
 import { checkCache, saveCache } from "../helpers/cache";
 import { ensureTmdbItem } from "../helpers/ensureTmdbIdentified";
-import { gmFetchJson } from "../helpers/gmFetchJson";
+import { gmFetchJson } from "../helpers/gmFetchHelpers";
 import { log } from "../helpers/log";
 import {
   MetadataProvider,
@@ -245,35 +246,20 @@ export class TmdbProvider extends MetadataProvider {
     const { rating, votes } = score;
     const { trackColor, barColor } = this.scoreColors(rating);
 
-    const li = $(`<li
-      style="
-          background: 0 0;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          box-sizing: border-box;
-          height: 68px;
-      "
-      title="${votes} votes"
-      >
-          <div
-              class="${UNIQUE}-consensus"
-              style="
-                  width: 68px;
-                  height: 68px;
-                  display: inline-block;
-                  transition: transform 0.2s;
-                  transform: scale(1);
-              "
-          >
-              <div
+    const { container, scale } = ratingBox(
+      "TMDB Score",
+      votes,
+      `https://www.themoviedb.org/${this.item.mediaType}/${this.item.id}`
+    );
+
+    scale.append(`<div
                   style="
                       display: inline-block;
-                      width: 68px;
-                      height: 68px;
+                      width: 60px;
+                      height: 60px;
                       border-radius: 50%;
                       background-color: #081c22;
-                      padding: 4px;
+                      padding: 3px;
                       display: flex;
                       align-items: center;
                       justify-content: center;
@@ -287,8 +273,8 @@ export class TmdbProvider extends MetadataProvider {
                       style="
                           position: relative;
                           display: inline-block;
-                          width: 60px;
-                          height: 60px;
+                          width: 54px;
+                          height: 54px;
                           text-align: center;
                       "
                   >
@@ -308,7 +294,7 @@ export class TmdbProvider extends MetadataProvider {
     }"
                               style="
                                   color: #fff;
-                                  font-size: 16px;
+                                  font-size: 15px;
                                   font-family: Consensus !important;
                                   speak: none;
                                   font-style: normal;
@@ -323,28 +309,16 @@ export class TmdbProvider extends MetadataProvider {
                       </div>
                   </div>
               </div>
-          </div>
-          <div
-              style="
-                  font-weight: 700;
-                  margin-left: 12px;
-                  color: #fff;
-                  line-height: 20px;
-                  font-size: 13px;
-              "
-          >TMDB<br/>Score
-          </div>
-      </li>
-  `);
+          </div>`);
 
-    parent.append(li);
+    parent.append(container);
 
     // @ts-expect-error
-    $(".abtexr-user_score_chart").easyPieChart({
+    $(`.${UNIQUE}-user_score_chart`).easyPieChart({
       lineCap: "round",
       lineWidth: 4,
       scaleColor: false,
-      size: 60,
+      size: 54,
       animate: {
         enabled: false,
       },

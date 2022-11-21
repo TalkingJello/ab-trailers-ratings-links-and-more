@@ -1,4 +1,7 @@
-export function gmFetchJson(opts: GM.Request, timeout = 10000): Promise<any> {
+export function gmFetch(
+  opts: GM.Request,
+  timeout = 10000
+): Promise<GM.Response<any>> {
   return new Promise((resolve, reject) => {
     GM_xmlhttpRequest({
       ...opts,
@@ -10,9 +13,16 @@ export function gmFetchJson(opts: GM.Request, timeout = 10000): Promise<any> {
         reject(err ? err : new Error("Failed to fetch"));
       },
       onload: function (response) {
-        console.log("onload", response);
-        resolve(JSON.parse(response.responseText));
+        resolve(response);
       },
     });
   });
+}
+
+export async function gmFetchJson(
+  opts: GM.Request,
+  timeout = 10000
+): Promise<any> {
+  const res = await gmFetch(opts, timeout);
+  return JSON.parse(res.responseText);
 }

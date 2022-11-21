@@ -3,6 +3,7 @@ import { injectLinksToPage } from "./dom/injectLinksToPage";
 import { injectRatingsToPage } from "./dom/injectRatingsToPage";
 import { injectTrailersToPage } from "./dom/injectTrailersToPage";
 import { placeSynopsis } from "./dom/placeSynopsis";
+import { AniDbProvider } from "./providers/AniDbProvider";
 import { ImdbProvider } from "./providers/ImdbProvider";
 import { ProviderFlags, Trailer } from "./providers/MetadataProvider";
 import { TmdbProvider } from "./providers/TmdbProvider";
@@ -20,6 +21,7 @@ async function main() {
     new TmdbProvider(),
     new ImdbProvider(),
     new TvdbProvider(),
+    new AniDbProvider(),
   ];
   insertDeliciousSettingsUi(providers);
 

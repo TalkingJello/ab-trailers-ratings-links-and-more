@@ -447,9 +447,4 @@ export default `@font-face {
     position: absolute;
     top: 0;
     left: 0;
-}
-
-div.abtexr-consensus:hover {
-    cursor: pointer;
-    transform: scale(1.1) !important;
 }`;

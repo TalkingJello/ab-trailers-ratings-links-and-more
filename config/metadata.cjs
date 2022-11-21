@@ -28,5 +28,5 @@ module.exports = {
     "GM_setValue",
     "GM_getValue",
   ],
-  connect: ["api.themoviedb.org"],
+  connect: ["api.themoviedb.org", "api.anidb.net"],
 };
