@@ -101,5 +101,7 @@ export function injectTrailersToPage(tr: Trailer[]) {
   }
 
   // select first on load
-  selectTrailer(0);
+  if (trailers.length > 0) {
+    selectTrailer(0);
+  }
 }

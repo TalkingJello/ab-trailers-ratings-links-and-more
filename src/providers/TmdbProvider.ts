@@ -1,6 +1,6 @@
 import { TMDB_LANGUAGE, UNIQUE } from "../constants";
 import { checkCache, saveCache } from "../helpers/cache";
-import { ensureTmdbIdentified } from "../helpers/ensureTmdbIdentified";
+import { ensureTmdbItem } from "../helpers/ensureTmdbIdentified";
 import { gmFetchJson } from "../helpers/gmFetchJson";
 import { log } from "../helpers/log";
 import { TMDB_V3_API_KEY } from "../keys";
@@ -10,6 +10,7 @@ import {
   ProviderFlags,
   Score,
   Trailer,
+  VideoSite,
 } from "./MetadataProvider";
 
 export enum TmdbMediaType {
@@ -20,8 +21,35 @@ export enum TmdbMediaType {
 export interface TmdbIdentified {
   id: number;
   mediaType: TmdbMediaType;
+}
+
+export interface TmdbExternalIds {
+  imdb_id?: string;
+  tvdb_id?: string;
+  wikidata_id?: string;
+  facebook_id?: string;
+  instagram_id?: string;
+  twitter_id?: string;
+}
+
+export interface TmdbVideo {
+  iso_639_1: string;
+  iso_3166_1: string;
+  name: string;
+  key: string;
+  site: string;
+  size: number;
+  type: string;
+  official: boolean;
+  published_at: string;
+  id: string;
+}
+
+export interface TmdbItem extends TmdbIdentified {
   rating: number;
   votes: number;
+  externalIds: TmdbExternalIds;
+  videos: TmdbVideo[];
 }
 
 export class TmdbProvider extends MetadataProvider {
@@ -63,8 +91,52 @@ export class TmdbProvider extends MetadataProvider {
     const out: TmdbIdentified = {
       mediaType: type,
       id: entry.id,
-      rating: entry.vote_average,
-      votes: entry.vote_count,
+    };
+    saveCache(key, out);
+    return out;
+  }
+
+  // both identify and fetch are needed since tmdb search
+  // doesn't return videos or external ids
+  // will probably come in handy anyways if we want to
+  // add some sort of match fixing for tmdb
+  static async fetchItem(identified: TmdbIdentified): Promise<TmdbItem> {
+    const { mediaType, id } = identified;
+    const key = `tmdb_fetch_${mediaType}_${id}`;
+    const cached = checkCache(key);
+    if (cached !== undefined) {
+      return cached as TmdbItem;
+    }
+
+    const url = new URL(`https://api.themoviedb.org/3/${mediaType}/${id}`);
+    url.searchParams.set("api_key", "REDACTED");
+    url.searchParams.set("language", TMDB_LANGUAGE);
+    url.searchParams.set("append_to_response", "external_ids,videos");
+    log(`fetching ${url.toString()}`);
+    url.searchParams.set("api_key", TMDB_V3_API_KEY);
+
+    const res = await gmFetchJson({
+      method: "GET",
+      url: url.toString(),
+    });
+    console.log("res", res);
+
+    if (
+      res.id !== id ||
+      !Array.isArray(res.videos?.results) ||
+      !res.external_ids
+    ) {
+      console.log("invalid response from tmdb", res);
+      throw new Error("invalid response from tmdb");
+    }
+
+    const out: TmdbItem = {
+      mediaType,
+      id,
+      rating: res.vote_average,
+      votes: res.vote_count,
+      externalIds: res.external_ids,
+      videos: res.videos.results,
     };
     saveCache(key, out);
     return out;
@@ -76,15 +148,15 @@ export class TmdbProvider extends MetadataProvider {
     ProviderFlags.Trailers,
     ProviderFlags.Link,
   ]);
-  private identified: TmdbIdentified;
+  private item: TmdbItem;
 
   async init() {
-    const res = await ensureTmdbIdentified();
+    const res = await ensureTmdbItem();
     if (!res) {
       return false;
     }
 
-    this.identified = res;
+    this.item = res;
     return true;
   }
 
@@ -96,7 +168,7 @@ export class TmdbProvider extends MetadataProvider {
 
     return {
       name: "TMDB",
-      url: `https://www.themoviedb.org/${this.identified.mediaType}/${this.identified.id}`,
+      url: `https://www.themoviedb.org/${this.item.mediaType}/${this.item.id}`,
     };
   }
 
@@ -106,49 +178,25 @@ export class TmdbProvider extends MetadataProvider {
       return [];
     }
 
-    const { mediaType, id } = this.identified;
-    const key = `tmdb_${mediaType}_trailers_${id}`;
-    const cached = checkCache(key);
-    if (Array.isArray(cached)) {
-      return cached as Trailer[];
-    }
-
-    const url = new URL(
-      `https://api.themoviedb.org/3/${mediaType}/${id}/videos`
-    );
-    url.searchParams.set("api_key", "REDACTED");
-    url.searchParams.set("language", TMDB_LANGUAGE);
-    log(`fetching ${url.toString()}`);
-    url.searchParams.set("api_key", TMDB_V3_API_KEY);
-
-    const res = await gmFetchJson({
-      method: "GET",
-      url: url.toString(),
-    });
-    if (!Array.isArray(res.results) || res.id !== id) {
-      throw new Error("invalid response from tmdb");
-    }
-
     const trailers: Trailer[] = [];
     const teasers: Trailer[] = [];
-    res.results.forEach((e: any) => {
-      if (e.type === "Teaser") {
+    this.item.videos.forEach((v) => {
+      if (v.type === "Teaser") {
         teasers.push({
-          site: e.site,
-          key: e.key,
-          name: `[Teaser] ${e.name}`,
+          site: v.site as VideoSite,
+          key: v.key,
+          name: `[Teaser] ${v.name}`,
         });
-      } else if (e.type === "Trailer") {
+      } else if (v.type === "Trailer") {
         trailers.push({
-          site: e.site,
-          key: e.key,
-          name: e.name,
+          site: v.site as VideoSite,
+          key: v.key,
+          name: v.name,
         });
       }
     });
     const final = [...trailers, ...teasers];
 
-    saveCache(key, final);
     return final;
   }
 
@@ -158,7 +206,7 @@ export class TmdbProvider extends MetadataProvider {
       return false;
     }
 
-    const { rating, votes } = this.identified;
+    const { rating, votes } = this.item;
     return { rating, votes };
   }
 
@@ -253,7 +301,7 @@ export class TmdbProvider extends MetadataProvider {
                       >
                           <span
                               class="${UNIQUE}-icon-r${
-      rating > 0 ? rating * 10 : "NR"
+      rating > 0 ? Math.round(rating * 10) : "NR"
     }"
                               style="
                                   color: #fff;
