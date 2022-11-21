@@ -67,7 +67,7 @@ export class TmdbProvider extends MetadataProvider {
     super();
   }
 
-  async getLink(): Promise<OutLink> {
+  getLink(): OutLink {
     return {
       name: "TMDB",
       url: `https://www.themoviedb.org/${this.identified.mediaType}/${this.identified.id}`,

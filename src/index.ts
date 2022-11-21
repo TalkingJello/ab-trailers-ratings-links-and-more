@@ -1,4 +1,5 @@
 import { insertDeliciousSettingsUi } from "./delicious";
+import { injectLinksToPage } from "./dom/injectLinksToPage";
 import { injectRatingsToPage } from "./dom/injectRatingsToPage";
 import { injectTrailersToPage } from "./dom/injectTrailersToPage";
 import { placeSynopsis } from "./dom/placeSynopsis";
@@ -29,15 +30,16 @@ async function main() {
   }
   log("TMDB Identification result:", id);
 
-  // Injects
+  // Providers
   const tmdbProvider = new TmdbProvider(id);
   const providers = [tmdbProvider];
-  injectRatingsToPage(providers);
 
+  // Inject to dom
+  injectLinksToPage(providers);
+  injectRatingsToPage(providers);
   const trailers = (
     await Promise.all(providers.map((p) => p.getTrailers()))
   ).flat();
-
   injectTrailersToPage(trailers);
 }
 

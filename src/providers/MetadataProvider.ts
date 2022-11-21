@@ -20,19 +20,15 @@ export interface OutLink {
 }
 
 export abstract class MetadataProvider {
-  protected insertLink(link: OutLink) {
-    throw new Error("Method not implemented.");
-  }
-
   abstract insertScore(parent: JQuery<HTMLElement>): void;
 
-  async getLink(): Promise<OutLink | undefined> {
-    return;
+  getLink(): OutLink | false {
+    return false;
   }
   async getTrailers(): Promise<Trailer[]> {
     return [];
   }
-  async getScore(): Promise<Score | undefined> {
+  async getScore(): Promise<Score | false> {
     return;
   }
 }
