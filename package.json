@@ -1,14 +1,10 @@
 {
-  "name": "webpack-userscript-template",
-  "description": "Build your UserScript with webpack",
-  "version": "0.0.1",
-  "author": {
-    "name": "Trim21",
-    "email": "trim21me@gmail.com"
-  },
+  "name": "ab-trailers-ratings-links-and-more",
+  "description": "Adds trailers, additional ratings, links (and more?) to AB anime pages",
+  "version": "1.0.0",
+  "author": "TalkingJello",
   "scripts": {
     "format": "prettier -w ./",
-    "analize": "cross-env npm_config_report=true npm run build",
     "build": "webpack --config config/webpack.config.prod.cjs",
     "dev": "webpack --config config/webpack.config.dev.cjs",
     "prepare": "husky install",
@@ -16,13 +12,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/trim21/webpack-userscript-template"
+    "url": "https://github.com/TalkingJello/ab-trailers-ratings-links-and-more"
   },
   "private": true,
-  "dependencies": {
-    "@trim21/gm-fetch": "^0.1.7",
-    "jquery": "^3.6.1"
-  },
+  "dependencies": {},
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json}": [
       "prettier --ignore-path ./.prettierignore --write "

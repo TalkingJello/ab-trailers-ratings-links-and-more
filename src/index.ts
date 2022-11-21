@@ -1,19 +1,44 @@
+import { insertDeliciousSettingsUi } from "./delicious";
+import { injectRatingsToPage } from "./dom/injectRatingsToPage";
+import { injectTrailersToPage } from "./dom/injectTrailersToPage";
+import { placeSynopsis } from "./dom/placeSynopsis";
+import { tmdbQueryFromPage } from "./dom/tmdbQueryFromPage";
+import { log } from "./helpers/log";
+import { TmdbProvider } from "./providers/TmdbProvider";
+import consensusCss from "./style/consensus";
 import "./style/main.less";
 
-//checkout homepage https://github.com/Trim21/gm-fetch for @trim21/gm-fetch
-import GM_fetch from "@trim21/gm-fetch";
-
 async function main() {
-  console.log("script start");
+  // General
+  GM_addStyle(consensusCss);
+  insertDeliciousSettingsUi();
+  placeSynopsis();
 
-  // cross domain requests
-  console.log(`uuid: ${await fetchExample()}`);
-}
+  // Identify media on page
+  const mip = tmdbQueryFromPage();
+  if (!mip) {
+    return;
+  }
+  log("Media detected on page:", mip);
 
-async function fetchExample(): Promise<string> {
-  const res = await GM_fetch("https://httpbin.org/uuid");
-  const data = await res.json();
-  return data.uuid;
+  // Identify from tmdb
+  const id = await TmdbProvider.identify(mip.type, mip.name);
+  if (!id) {
+    log("No match found on TMDB.");
+    return;
+  }
+  log("TMDB Identification result:", id);
+
+  // Injects
+  const tmdbProvider = new TmdbProvider(id);
+  const providers = [tmdbProvider];
+  injectRatingsToPage(providers);
+
+  const trailers = (
+    await Promise.all(providers.map((p) => p.getTrailers()))
+  ).flat();
+
+  injectTrailersToPage(trailers);
 }
 
 main().catch((e) => {

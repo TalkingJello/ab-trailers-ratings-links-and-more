@@ -5,7 +5,8 @@
     "noImplicitAny": true,
     "moduleResolution": "Node",
     "module": "ESNext",
-    "target": "ES2020",
-    "allowJs": true
+    "target": "ESNext",
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true
   }
 }

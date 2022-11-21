@@ -1,9 +1,3 @@
-# This is a project help you build userscript with webpack
-
-Just [use this git repo as a template](https://github.com/Trim21/webpack-userscript-template/generate).
-
-[中文说明](./readme.cn.md)
-
 ## dev
 
 1. Allow Tampermonkey's access to local file URIs [tampermonkey/faq](https://tampermonkey.net/faq.php?ext=dhdg#Q204)
