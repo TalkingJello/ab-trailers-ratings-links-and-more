@@ -1,17 +1,26 @@
 import { UNIQUE } from "../constants";
 import { settings } from "../delicious";
-import { isDubbed } from "../helpers/isDubbed";
+import { isDubbed, isSubbed } from "../helpers/titleFilters";
 import { Trailer, VideoSite } from "../providers/MetadataProvider";
 import { pageSection } from "./pageSection";
 
-export function injectTrailersToPage(tr: Trailer[]) {
+function sortTrailers(tr: Trailer[]) {
   const trailers = [...tr];
+  trailers.sort((a, b) => {
+    let s = 0;
 
-  // Dub preference
-  if (settings.preferredTrailerAudioLanguage !== "any") {
-    const mod = settings.preferredTrailerAudioLanguage === "dubbed" ? -1 : 1;
-    trailers.sort((a, b) => {
-      let s = 0;
+    // Try to prefer subs over raw
+    if (isSubbed(a.name)) {
+      s -= 1;
+    }
+    if (isSubbed(b.name)) {
+      s += 1;
+    }
+
+    // Dub preference
+    if (settings.preferredTrailerAudioLanguage !== "any") {
+      const mod = settings.preferredTrailerAudioLanguage === "dubbed" ? -2 : 2;
+
       if (isDubbed(a.name)) {
         s += mod;
       }
@@ -19,10 +28,16 @@ export function injectTrailersToPage(tr: Trailer[]) {
       if (isDubbed(b.name)) {
         s -= mod;
       }
+    }
 
-      return s;
-    });
-  }
+    return s;
+  });
+
+  return trailers;
+}
+
+export function injectTrailersToPage(tr: Trailer[]) {
+  const trailers = sortTrailers(tr);
 
   // General layout
   const synopsis = $('.box > .head > strong:contains("Plot Synopsis")')
