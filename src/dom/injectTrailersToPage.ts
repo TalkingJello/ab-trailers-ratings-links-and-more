@@ -63,7 +63,7 @@ export function injectTrailersToPage(tr: Trailer[]) {
     let src;
     switch (trailer.site) {
       case VideoSite.YouTube:
-        src = `https://www.youtube.com/embed/${trailer.key}?VQ=HD1080&rel=0&loop=1`;
+        src = `https://www.youtube-nocookie.com/embed/${trailer.key}?VQ=HD1080&rel=0&loop=1`;
         break;
       case VideoSite.Vimeo:
         src = `https://player.vimeo.com/video/${trailer.key}`;
