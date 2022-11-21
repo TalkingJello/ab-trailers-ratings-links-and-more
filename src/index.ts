@@ -3,8 +3,7 @@ import { injectLinksToPage } from "./dom/injectLinksToPage";
 import { injectRatingsToPage } from "./dom/injectRatingsToPage";
 import { injectTrailersToPage } from "./dom/injectTrailersToPage";
 import { placeSynopsis } from "./dom/placeSynopsis";
-import { tmdbQueryFromPage } from "./dom/tmdbQueryFromPage";
-import { log } from "./helpers/log";
+import { ProviderFlags, Trailer } from "./providers/MetadataProvider";
 import { TmdbProvider } from "./providers/TmdbProvider";
 import consensusCss from "./style/consensus";
 import "./style/main.less";
@@ -12,34 +11,34 @@ import "./style/main.less";
 async function main() {
   // General
   GM_addStyle(consensusCss);
-  insertDeliciousSettingsUi();
   placeSynopsis();
 
-  // Identify media on page
-  const mip = tmdbQueryFromPage();
-  if (!mip) {
-    return;
-  }
-  log("Media detected on page:", mip);
-
-  // Identify from tmdb
-  const id = await TmdbProvider.identify(mip.type, mip.name);
-  if (!id) {
-    log("No match found on TMDB.");
-    return;
-  }
-  log("TMDB Identification result:", id);
-
   // Providers
-  const tmdbProvider = new TmdbProvider(id);
+  const tmdbProvider = new TmdbProvider();
   const providers = [tmdbProvider];
+  insertDeliciousSettingsUi(providers);
 
   // Inject to dom
-  injectLinksToPage(providers);
-  injectRatingsToPage(providers);
-  const trailers = (
-    await Promise.all(providers.map((p) => p.getTrailers()))
-  ).flat();
+  injectLinksToPage(providers.filter((p) => p.flagEnabled(ProviderFlags.Link)));
+  injectRatingsToPage(
+    providers.filter((p) => p.flagEnabled(ProviderFlags.Score))
+  );
+
+  const trailers: Trailer[] = [];
+  const res = await Promise.allSettled(
+    providers
+      .filter((p) => p.flagEnabled(ProviderFlags.Trailers))
+      .map((p) => p.getTrailers())
+  );
+  res.forEach((r) => {
+    if (r.status === "rejected") {
+      // TODO: Handle error
+      return;
+    }
+
+    trailers.push(...r.value);
+  });
+
   injectTrailersToPage(trailers);
 }
 

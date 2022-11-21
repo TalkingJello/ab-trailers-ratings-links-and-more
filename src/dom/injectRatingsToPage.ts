@@ -1,7 +1,16 @@
-import { MetadataProvider } from "../providers/MetadataProvider";
+import { MetadataProvider, Score } from "../providers/MetadataProvider";
 import { pageSection } from "./pageSection";
 
-export function injectRatingsToPage(providers: MetadataProvider[]) {
+export async function injectRatingsToPage(providers: MetadataProvider[]) {
+  const res = await Promise.allSettled(
+    providers.map(
+      async (p): Promise<[MetadataProvider, Score | false]> => [
+        p,
+        await p.getScore(),
+      ]
+    )
+  );
+
   // General layout
   const synopsis = $('.box > .head > strong:contains("Plot Synopsis")')
     .parent()
@@ -9,7 +18,16 @@ export function injectRatingsToPage(providers: MetadataProvider[]) {
   const { container, body } = pageSection("Ratings");
   synopsis.after(container);
 
-  providers.forEach((p) => {
-    p.insertScore(body);
+  res.forEach((r) => {
+    if (r.status === "rejected") {
+      // TODO: Handle error
+      return;
+    }
+
+    const [provider, score] = r.value;
+    if (!score) {
+      return;
+    }
+    provider.insertScore(body, score);
   });
 }

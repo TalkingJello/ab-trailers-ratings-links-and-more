@@ -1,10 +1,16 @@
 import { MetadataProvider } from "../providers/MetadataProvider";
 
-export function injectLinksToPage(providers: MetadataProvider[]) {
-  const links = $("#content > div.thin > h3");
+export async function injectLinksToPage(providers: MetadataProvider[]) {
+  const res = await Promise.allSettled(providers.map((p) => p.getLink()));
 
-  providers.forEach((p) => {
-    const link = p.getLink();
+  const links = $("#content > div.thin > h3");
+  res.forEach((r) => {
+    if (r.status === "rejected") {
+      // TODO: Handle error
+      return;
+    }
+
+    const link = r.value;
     if (!link) {
       return;
     }

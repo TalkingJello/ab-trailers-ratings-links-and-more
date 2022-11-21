@@ -1,9 +1,16 @@
 import { TMDB_LANGUAGE, UNIQUE } from "../constants";
 import { checkCache, saveCache } from "../helpers/cache";
+import { ensureTmdbIdentified } from "../helpers/ensureTmdbIdentified";
 import { gmFetchJson } from "../helpers/gmFetchJson";
 import { log } from "../helpers/log";
 import { TMDB_V3_API_KEY } from "../keys";
-import { MetadataProvider, OutLink, Score, Trailer } from "./MetadataProvider";
+import {
+  MetadataProvider,
+  OutLink,
+  ProviderFlags,
+  Score,
+  Trailer,
+} from "./MetadataProvider";
 
 export enum TmdbMediaType {
   Movie = "movie",
@@ -63,11 +70,30 @@ export class TmdbProvider extends MetadataProvider {
     return out;
   }
 
-  constructor(private identified: TmdbIdentified) {
-    super();
+  name = "TMDB";
+  flags: Set<ProviderFlags> = new Set([
+    ProviderFlags.Score,
+    ProviderFlags.Trailers,
+    ProviderFlags.Link,
+  ]);
+  private identified: TmdbIdentified;
+
+  async init() {
+    const res = await ensureTmdbIdentified();
+    if (!res) {
+      return false;
+    }
+
+    this.identified = res;
+    return true;
   }
 
-  getLink(): OutLink {
+  async getLink(): Promise<OutLink | false> {
+    const ok = await this.ensureInitialized();
+    if (!ok) {
+      return false;
+    }
+
     return {
       name: "TMDB",
       url: `https://www.themoviedb.org/${this.identified.mediaType}/${this.identified.id}`,
@@ -75,6 +101,11 @@ export class TmdbProvider extends MetadataProvider {
   }
 
   async getTrailers(): Promise<Trailer[]> {
+    const ok = await this.ensureInitialized();
+    if (!ok) {
+      return [];
+    }
+
     const { mediaType, id } = this.identified;
     const key = `tmdb_${mediaType}_trailers_${id}`;
     const cached = checkCache(key);
@@ -121,13 +152,20 @@ export class TmdbProvider extends MetadataProvider {
     return final;
   }
 
-  async getScore(): Promise<Score> {
+  async getScore(): Promise<Score | false> {
+    const ok = await this.ensureInitialized();
+    if (!ok) {
+      return false;
+    }
+
     const { rating, votes } = this.identified;
     return { rating, votes };
   }
 
-  private scoreColors(): { trackColor: string; barColor: string } {
-    const { rating } = this.identified;
+  private scoreColors(rating: number): {
+    trackColor: string;
+    barColor: string;
+  } {
     if (rating === 0) {
       return {
         trackColor: "#666666",
@@ -152,9 +190,9 @@ export class TmdbProvider extends MetadataProvider {
     };
   }
 
-  insertScore(parent: JQuery<HTMLElement>) {
-    const { rating, votes } = this.identified;
-    const { trackColor, barColor } = this.scoreColors();
+  insertScore(parent: JQuery<HTMLElement>, score: Score) {
+    const { rating, votes } = score;
+    const { trackColor, barColor } = this.scoreColors(rating);
 
     const li = $(`<li
       style="
