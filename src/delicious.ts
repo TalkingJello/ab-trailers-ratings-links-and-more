@@ -70,7 +70,7 @@ export function insertDeliciousSettingsUi(providers: MetadataProvider[]) {
         delicious.settings.createCheckbox(
           `provider-${p.name}-enable-${ProviderFlags.Link}`,
           "Enable Link",
-          `Link the ${p.name} anime page in the links section`
+          `Add a link to anime's ${p.name} page in the links section`
         )
       );
     }

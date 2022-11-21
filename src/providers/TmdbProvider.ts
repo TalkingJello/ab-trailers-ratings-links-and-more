@@ -25,7 +25,7 @@ export interface TmdbIdentified {
 
 export interface TmdbExternalIds {
   imdb_id?: string;
-  tvdb_id?: string;
+  tvdb_id?: number;
   wikidata_id?: string;
   facebook_id?: string;
   instagram_id?: string;

@@ -3,8 +3,10 @@ import { injectLinksToPage } from "./dom/injectLinksToPage";
 import { injectRatingsToPage } from "./dom/injectRatingsToPage";
 import { injectTrailersToPage } from "./dom/injectTrailersToPage";
 import { placeSynopsis } from "./dom/placeSynopsis";
+import { ImdbProvider } from "./providers/ImdbProvider";
 import { ProviderFlags, Trailer } from "./providers/MetadataProvider";
 import { TmdbProvider } from "./providers/TmdbProvider";
+import { TvdbProvider } from "./providers/tvdbProvider";
 import consensusCss from "./style/consensus";
 import "./style/main.less";
 
@@ -14,8 +16,11 @@ async function main() {
   placeSynopsis();
 
   // Providers
-  const tmdbProvider = new TmdbProvider();
-  const providers = [tmdbProvider];
+  const providers = [
+    new TmdbProvider(),
+    new ImdbProvider(),
+    new TvdbProvider(),
+  ];
   insertDeliciousSettingsUi(providers);
 
   // Inject to dom
