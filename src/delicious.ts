@@ -1,6 +1,6 @@
 import { NAME } from "./constants";
 import { log } from "./helpers/log";
-import { MetadataProvider, ProviderFlags } from "./providers/MetadataProvider";
+import { MetadataProvider } from "./providers/MetadataProvider";
 
 function deliciousSubHeading(s: HTMLElement, title: string) {
   const h3 = $(`<h3 style="
@@ -39,6 +39,15 @@ export function insertDeliciousSettingsUi(providers: MetadataProvider[]) {
     )
   );
 
+  delicious.settings.init("linksInNewTab", true);
+  s.appendChild(
+    delicious.settings.createCheckbox(
+      "linksInNewTab",
+      "Open links in new tab",
+      "Open external anime links in a new tab. Applies to all links, both the ones already present (AniDB and MAL for example), and the ones added by the script (such as TMDB and IMDb)."
+    )
+  );
+
   delicious.settings.init("itemsOnTop", true);
   s.appendChild(
     delicious.settings.createCheckbox(
@@ -60,48 +69,7 @@ export function insertDeliciousSettingsUi(providers: MetadataProvider[]) {
   // Provider specific
   providers.forEach((p) => {
     deliciousSubHeading(s, p.name);
-
-    if (p.flagSupported(ProviderFlags.Link)) {
-      delicious.settings.init(
-        `provider-${p.name}-enable-${ProviderFlags.Link}`,
-        true
-      );
-      s.appendChild(
-        delicious.settings.createCheckbox(
-          `provider-${p.name}-enable-${ProviderFlags.Link}`,
-          "Enable Link",
-          `Add a link to anime's ${p.name} page in the links section`
-        )
-      );
-    }
-
-    if (p.flagSupported(ProviderFlags.Score)) {
-      delicious.settings.init(
-        `provider-${p.name}-enable-${ProviderFlags.Score}`,
-        true
-      );
-      s.appendChild(
-        delicious.settings.createCheckbox(
-          `provider-${p.name}-enable-${ProviderFlags.Score}`,
-          "Enable Rating",
-          `Show ratings from ${p.name}`
-        )
-      );
-    }
-
-    if (p.flagSupported(ProviderFlags.Trailers)) {
-      delicious.settings.init(
-        `provider-${p.name}-enable-${ProviderFlags.Trailers}`,
-        true
-      );
-      s.appendChild(
-        delicious.settings.createCheckbox(
-          `provider-${p.name}-enable-${ProviderFlags.Trailers}`,
-          "Enable Trailers",
-          `Search ${p.name} for trailers`
-        )
-      );
-    }
+    p.insertDeliciousSettings(s);
   });
 
   delicious.settings.insertSection(section);
@@ -115,5 +83,6 @@ export const settings = {
   trailerAfterSynopsis: JSON.parse(
     GM_getValue("trailerAfterSynopsis", "false")
   ),
+  linksInNewTab: JSON.parse(GM_getValue("linksInNewTab", "true")),
 };
 log("settings", settings);

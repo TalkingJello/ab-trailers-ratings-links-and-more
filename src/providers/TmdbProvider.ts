@@ -3,7 +3,6 @@ import { checkCache, saveCache } from "../helpers/cache";
 import { ensureTmdbItem } from "../helpers/ensureTmdbIdentified";
 import { gmFetchJson } from "../helpers/gmFetchJson";
 import { log } from "../helpers/log";
-import { TMDB_V3_API_KEY } from "../keys";
 import {
   MetadataProvider,
   OutLink,
@@ -66,7 +65,7 @@ export class TmdbProvider extends MetadataProvider {
     url.searchParams.set("language", TMDB_LANGUAGE);
     url.searchParams.set("query", name);
     log(`fetching ${url.toString()}`);
-    url.searchParams.set("api_key", TMDB_V3_API_KEY);
+    url.searchParams.set("api_key", this.getUserApiKey("TMDB"));
 
     const res = await gmFetchJson({
       method: "GET",
@@ -113,13 +112,12 @@ export class TmdbProvider extends MetadataProvider {
     url.searchParams.set("language", TMDB_LANGUAGE);
     url.searchParams.set("append_to_response", "external_ids,videos");
     log(`fetching ${url.toString()}`);
-    url.searchParams.set("api_key", TMDB_V3_API_KEY);
+    url.searchParams.set("api_key", this.getUserApiKey("TMDB"));
 
     const res = await gmFetchJson({
       method: "GET",
       url: url.toString(),
     });
-    console.log("res", res);
 
     if (
       res.id !== id ||
@@ -143,14 +141,19 @@ export class TmdbProvider extends MetadataProvider {
   }
 
   name = "TMDB";
+  apiKeyInstructionsLink =
+    "https://developers.themoviedb.org/3/getting-started/introduction";
   flags: Set<ProviderFlags> = new Set([
     ProviderFlags.Score,
     ProviderFlags.Trailers,
     ProviderFlags.Link,
+    ProviderFlags.ApiKey,
   ]);
   private item: TmdbItem;
 
   async init() {
+    log(`initializing with api key ${this.getUserApiKey()}`);
+
     const res = await ensureTmdbItem();
     if (!res) {
       return false;
@@ -346,5 +349,35 @@ export class TmdbProvider extends MetadataProvider {
         enabled: false,
       },
     });
+  }
+
+  async testApiKey(): Promise<boolean> {
+    const key = this.getUserApiKey();
+    if (!key) {
+      throw new Error("No API key set, please set one in the script settings");
+    }
+
+    const url = new URL(`https://api.themoviedb.org/3/configuration`);
+    url.searchParams.set("api_key", "REDACTED");
+    log(`testing against ${url.toString()}`);
+    url.searchParams.set("api_key", key);
+
+    const res = await gmFetchJson({
+      method: "GET",
+      url: url.toString(),
+    });
+    console.log("test res", res);
+
+    if (res.success === false && res.status_message) {
+      log("api key test failed", res);
+      throw new Error(res.status_message);
+    }
+
+    if (res.images?.secure_base_url !== "https://image.tmdb.org/t/p/") {
+      log("api key test failed", res);
+      throw new Error("Invalid response from TMDB");
+    }
+
+    return true;
   }
 }

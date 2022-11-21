@@ -1,9 +1,13 @@
+import { settings } from "../delicious";
 import { MetadataProvider } from "../providers/MetadataProvider";
 
 export async function injectLinksToPage(providers: MetadataProvider[]) {
-  const res = await Promise.allSettled(providers.map((p) => p.getLink()));
-
   const links = $("#content > div.thin > h3");
+  if (settings.linksInNewTab) {
+    links.find("a").attr("target", "_blank");
+  }
+
+  const res = await Promise.allSettled(providers.map((p) => p.getLink()));
   res.forEach((r) => {
     if (r.status === "rejected") {
       // TODO: Handle error
@@ -16,7 +20,9 @@ export async function injectLinksToPage(providers: MetadataProvider[]) {
     }
     links.append(
       " | ",
-      `<a href="${link.url}" target="_blank">${link.name}</a>`
+      `<a href="${link.url}" target="${
+        settings.linksInNewTab ? "_blank" : ""
+      }">${link.name}</a>`
     );
   });
 }
