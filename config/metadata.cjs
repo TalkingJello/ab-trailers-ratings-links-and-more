@@ -19,7 +19,6 @@ module.exports = {
     "https://raw.githubusercontent.com/rendro/easy-pie-chart/97b5824bf423410c3c6a1e971860159f17ee6ee6/dist/jquery.easypiechart.min.js",
   ],
   grant: [
-    "unsafeWindow",
     "GM_addElement",
     "GM_addStyle",
     "GM_xmlhttpRequest",

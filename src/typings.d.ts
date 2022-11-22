@@ -1,6 +1,6 @@
 declare module "*.less";
 
-declare var unsafeWindow: Window;
+// declare var unsafeWindow: Window;
 declare function GM_addStyle(style: string): void;
 declare function GM_addElement(
   parent: HTMLElement,

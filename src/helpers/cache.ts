@@ -26,5 +26,3 @@ export function clearCache() {
     .filter((v) => v.startsWith("cache_"))
     .forEach((name) => GM_deleteValue(name));
 }
-// @ts-expect-error
-unsafeWindow.CLEAR_CACHE = clearCache;

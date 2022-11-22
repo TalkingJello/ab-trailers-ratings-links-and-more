@@ -1,4 +1,5 @@
 import { NAME } from "./constants";
+import { clearCache } from "./helpers/cache";
 import { log } from "./helpers/log";
 import { MetadataProvider } from "./providers/MetadataProvider";
 
@@ -71,6 +72,16 @@ export function insertDeliciousSettingsUi(providers: MetadataProvider[]) {
     deliciousSubHeading(s, p.name);
     p.insertDeliciousSettings(s);
   });
+
+  // Advanced
+  deliciousSubHeading(s, "Advanced");
+  const clearCacheButton = $(
+    `<input type="button" style="margin-left: 20px;" value="Clear Cache"/>`
+  );
+  clearCacheButton.click(() => {
+    clearCache();
+  });
+  $(s).append(clearCacheButton);
 
   delicious.settings.insertSection(section);
 }
