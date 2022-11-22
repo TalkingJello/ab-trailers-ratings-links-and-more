@@ -1,6 +1,6 @@
 import { UNIQUE } from "../constants";
 
-export function ratingBox(title: string, votes: number, link: string) {
+export function injectAnimeBytesRating(parent: JQuery<HTMLElement>) {
   const container = $(`<div
       style="
           background: 0 0;
@@ -10,7 +10,7 @@ export function ratingBox(title: string, votes: number, link: string) {
           box-sizing: border-box;
       "
       >
-<a target="_blank" href="${link}" style="height: 68px; width: 68px;"><div
+<div
               class="${UNIQUE}-scale-on-hover"
               style="
                   width: 68px;
@@ -19,8 +19,9 @@ export function ratingBox(title: string, votes: number, link: string) {
                   transition: transform 0.2s;
                   transform: scale(1);
               "
-          ></div></a>
+          ></div>
           <div
+              class="${UNIQUE}-rating-text-div"
               style="
                   font-weight: 700;
                   margin-left: 5px;
@@ -29,14 +30,25 @@ export function ratingBox(title: string, votes: number, link: string) {
                   font-size: 13px;
               "
           >
-          ${title}
-          <br>
-          <span style="color: gray;font-size: 12.5px;"><i>${votes}</i> votes</span>
           </div>
       </div>
   `);
 
+  // Image
   const scale = container.find(`.${UNIQUE}-scale-on-hover`);
+  scale.append(
+    `<img src="https://mei.animebytes.tv/Ok3xQjqTaoN.png" style="width: 66px; height: 66px;" />`
+  );
 
-  return { container, scale };
+  // Star rating
+  const textContainer = container.find(`.${UNIQUE}-rating-text-div`);
+  [
+    $("#rating > #container_star"),
+    $("#rating > #message"),
+    $("#rating > #rating_stats"),
+  ].forEach((e) => {
+    e.detach();
+    e.appendTo(textContainer);
+  });
+  parent.append(container);
 }

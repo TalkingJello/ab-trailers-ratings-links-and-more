@@ -37,6 +37,10 @@ function sortTrailers(tr: Trailer[]) {
 }
 
 export function injectTrailersToPage(tr: Trailer[]) {
+  if (tr.length === 0) {
+    return;
+  }
+
   const trailers = sortTrailers(tr);
 
   // General layout
