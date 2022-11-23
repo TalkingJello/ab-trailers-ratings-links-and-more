@@ -11,6 +11,7 @@ export async function injectLinksToPage(providers: MetadataProvider[]) {
   res.forEach((r) => {
     if (r.status === "rejected") {
       // TODO: Handle error
+      console.error("Failed to get link from provider", r.reason);
       return;
     }
 

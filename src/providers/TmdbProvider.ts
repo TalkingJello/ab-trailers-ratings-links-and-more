@@ -144,6 +144,7 @@ export class TmdbProvider extends MetadataProvider {
   name = "TMDB";
   apiKeyInstructionsLink =
     "https://developers.themoviedb.org/3/getting-started/introduction";
+  apiKeyName = "API Key (v3 auth)";
   flags: Set<ProviderFlags> = new Set([
     ProviderFlags.Score,
     ProviderFlags.Trailers,
@@ -340,7 +341,6 @@ export class TmdbProvider extends MetadataProvider {
       method: "GET",
       url: url.toString(),
     });
-    console.log("test res", res);
 
     if (res.success === false && res.status_message) {
       log("api key test failed", res);

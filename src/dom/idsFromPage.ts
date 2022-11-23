@@ -17,5 +17,5 @@ export function malIdFromPage(): string | false {
     return false;
   }
 
-  return found.attr("href").split("/").pop();
+  return found.attr("href").match(/\/anime\/(\d+)/)?.[1] ?? false;
 }

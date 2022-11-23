@@ -15,6 +15,8 @@ export interface Trailer {
 export interface Score {
   rating: number;
   votes: number;
+  rank?: number;
+  breakdownLink?: string;
 }
 
 export interface OutLink {
@@ -33,6 +35,7 @@ export abstract class MetadataProvider {
   private initilizationPromise: Promise<boolean>;
   abstract name: string;
   apiKeyInstructionsLink = "";
+  apiKeyName = "";
   testApiKey?(): Promise<boolean>;
 
   protected abstract init(): Promise<boolean>;
@@ -102,7 +105,7 @@ export abstract class MetadataProvider {
   value="${currentApiKey ? "Override Current" : "Set"} API Key"
   class="btn-${currentApiKey ? "delete" : "sub"}" style="">
   <label style="margin-left: 4px;">
-  Click to set your ${this.name} API key.
+  Click to set your ${this.name} API key (aka ${this.apiKeyName}).
   This is required for this provider to work.
   Getting an API key isn't too complicated and should only take a few minutes,
   when prompted for details on the key creation you can usually fill random information.
@@ -151,7 +154,9 @@ export abstract class MetadataProvider {
             alert(`API key is invalid!`);
           }
         } catch (err) {
-          alert(`API key is invalid! Error: ${err}`);
+          alert(
+            `API key is invalid! Error: ${err.message ? err.message : err}`
+          );
         } finally {
           button.val("Test API Key");
           button.prop("disabled", false);

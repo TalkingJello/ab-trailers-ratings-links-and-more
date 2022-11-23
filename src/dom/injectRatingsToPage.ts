@@ -16,6 +16,7 @@ export async function injectRatingsToPage(providers: MetadataProvider[]) {
   res.forEach((r) => {
     if (r.status === "rejected") {
       // @TODO: Handle error
+      console.error("Failed to get score from provider", r.reason);
       return;
     }
 
@@ -34,6 +35,7 @@ export async function injectRatingsToPage(providers: MetadataProvider[]) {
     .parent();
   const { container, body } = pageSection("Ratings");
   body.css("gap", "18px");
+  body.css("flex-wrap", "wrap");
   synopsis.after(container);
 
   // load provider ratings

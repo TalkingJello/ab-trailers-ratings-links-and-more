@@ -59,6 +59,7 @@ export class AniDbProvider extends MetadataProvider {
       const out: Score = {
         rating: parseFloat(rating.innerHTML),
         votes: parseInt(rating.getAttribute("count")),
+        breakdownLink: `https://anidb.net/anime/${this.aniDbId}/vote/statistic`,
       };
 
       saveCache(key, out);
@@ -69,12 +70,12 @@ export class AniDbProvider extends MetadataProvider {
   }
 
   insertScore(parent: JQuery<HTMLElement>, score: Score): void {
-    const { rating, votes } = score;
+    const { rating, votes, breakdownLink } = score;
 
     const { container, scale } = ratingBox(
       `${rating} / 10`,
       votes,
-      `https://anidb.net/anime/${this.aniDbId}/vote/statistic`
+      breakdownLink
     );
 
     scale.append(

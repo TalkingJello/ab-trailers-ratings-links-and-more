@@ -27,5 +27,5 @@ module.exports = {
     "GM_setValue",
     "GM_getValue",
   ],
-  connect: ["api.themoviedb.org", "api.anidb.net"],
+  connect: ["api.themoviedb.org", "api.anidb.net", "api.myanimelist.net"],
 };

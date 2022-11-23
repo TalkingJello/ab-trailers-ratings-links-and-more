@@ -18,6 +18,9 @@ export function ratingBox(title: string, votes: number, link: string) {
                   display: inline-block;
                   transition: transform 0.2s;
                   transform: scale(1);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
               "
           ></div></a>
           <div
@@ -31,7 +34,7 @@ export function ratingBox(title: string, votes: number, link: string) {
           >
           ${title}
           <br>
-          <span style="color: gray;font-size: 12.5px;"><i>${votes}</i> votes</span>
+          <span style="color: gray;font-size: 12.5px;"><i>${votes.toLocaleString()}</i> votes</span>
           </div>
       </div>
   `);

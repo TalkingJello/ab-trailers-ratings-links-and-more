@@ -5,6 +5,7 @@ import { injectTrailersToPage } from "./dom/injectTrailersToPage";
 import { placeSynopsis } from "./dom/placeSynopsis";
 import { AniDbProvider } from "./providers/AniDbProvider";
 import { ImdbProvider } from "./providers/ImdbProvider";
+import { MalProvider } from "./providers/MalProvider";
 import { ProviderFlags, Trailer } from "./providers/MetadataProvider";
 import { TmdbProvider } from "./providers/TmdbProvider";
 import { TvdbProvider } from "./providers/tvdbProvider";
@@ -19,6 +20,7 @@ async function main() {
   // Providers
   const providers = [
     new TmdbProvider(),
+    new MalProvider(),
     new ImdbProvider(),
     new TvdbProvider(),
     new AniDbProvider(),
