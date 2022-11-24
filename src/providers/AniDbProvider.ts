@@ -1,9 +1,9 @@
+import { ANIDB_CLIENT_NAME, ANIDB_CLIENT_VERSION } from "../constants";
 import { aniDbIdFromPage } from "../dom/idsFromPage";
 import { ratingBox } from "../dom/ratingBox";
 import { checkCache, saveCache } from "../helpers/cache";
 import { gmFetch } from "../helpers/gmFetchHelpers";
 import { log } from "../helpers/log";
-import { ANIDB_CLIENT_NAME, ANIDB_CLIENT_VERSION } from "../keys";
 import { MetadataProvider, ProviderFlags, Score } from "./MetadataProvider";
 
 export class AniDbProvider extends MetadataProvider {
