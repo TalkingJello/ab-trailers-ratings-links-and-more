@@ -1,5 +1,6 @@
 import { MetadataProvider, Score } from "../providers/MetadataProvider";
 import { injectAnimeBytesRating } from "./animeBytesRating";
+import { injectAverageRating } from "./averageRating";
 import { pageSection } from "./pageSection";
 
 export async function injectRatingsToPage(providers: MetadataProvider[]) {
@@ -44,10 +45,15 @@ export async function injectRatingsToPage(providers: MetadataProvider[]) {
     provider.insertScore(body, score);
   });
 
-  // AnimeBytes rating
   const secondPart = $(
     `<div class="body" style="display: flex; justify-content: center;"></div>`
   );
+  secondPart.css("gap", "18px");
+  secondPart.css("flex-wrap", "wrap");
+  secondPart.css("align-items", "start");
+  // AnimeBytes rating
   injectAnimeBytesRating(secondPart);
+  // Average rating
+  injectAverageRating(valid, secondPart);
   secondPart.appendTo(container);
 }

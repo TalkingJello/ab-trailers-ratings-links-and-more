@@ -1,68 +1,6 @@
 import { UNIQUE } from "../constants";
 import { log } from "../helpers/log";
-import { Score } from "../providers/MetadataProvider";
-
-function abScoreFromPage(): false | [Score, number, string] {
-  let myRating = 0;
-  const match = $("#message")
-    .text()
-    .match(/^My vote: (\d+)$/);
-  const deleteHref = $("#rating_stats > a").attr("href");
-  log("deleteHref", deleteHref);
-  if (
-    match &&
-    match[1] &&
-    $("#message").css("display") !== "none" &&
-    deleteHref &&
-    deleteHref.startsWith("javascript:deleteVote")
-  ) {
-    myRating = parseInt(match[1]);
-  }
-
-  return [
-    {
-      rating: parseFloat($("#avg_rating").text()),
-      votes: parseInt($("#num_rating").text()),
-    },
-    myRating,
-    deleteHref,
-  ];
-}
-
-function subscribeToAbScoreChange(
-  onUpdate: (score: Score, myScore: number, deleteHref: string) => void
-) {
-  const update = () => {
-    const res = abScoreFromPage();
-    if (!res) {
-      return;
-    }
-
-    onUpdate(...res);
-  };
-
-  const observer = new MutationObserver(() => update());
-  observer.observe($("#rating").get(0), {
-    childList: true,
-    attributes: false,
-    characterData: false,
-    subtree: false,
-  });
-  observer.observe($("#rating_stats").get(0), {
-    childList: true,
-    attributes: false,
-    characterData: false,
-    subtree: false,
-  });
-  observer.observe($("#container_star").get(0), {
-    childList: true,
-    subtree: true,
-    attributes: false,
-    characterData: false,
-  });
-
-  update();
-}
+import { subscribeToAbScoreChange } from "../helpers/subscribeToAbScoreChange";
 
 export function injectAnimeBytesRating(parent: JQuery<HTMLElement>) {
   const container = $(`<div style="
@@ -115,12 +53,12 @@ export function injectAnimeBytesRating(parent: JQuery<HTMLElement>) {
   // My rating
   const myRatingDiv = $(`<div></div>`).hide().appendTo(ratingContainer);
   const del = $(
-    `<a href="#" style="position: relative; top: 3px;"><svg style="width: 16px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffabc8">
+    `<a href="#" style="position: relative; top: 3px;"><svg style="width: 16px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#fe2a73">
     <title>Remove Rating</title>
   <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 </svg></a>`
   ).appendTo(myRatingDiv);
-  const myRating = $(`<span style="color: #ffabc8;"></span>`).appendTo(
+  const myRating = $(`<span style="color: #fe2a73;"></span>`).appendTo(
     myRatingDiv
   );
   myRatingDiv.append(`<br>`);
@@ -145,7 +83,6 @@ export function injectAnimeBytesRating(parent: JQuery<HTMLElement>) {
         votes.html(`<i>${score.votes.toLocaleString()}</i> votes`);
 
         if (myScore !== 0) {
-          log("Showing my rating", myScore);
           myRatingDiv.slideDown(500);
           myRating.text(`My Rating: ${myScore} / 10`);
           del.attr("href", deleteHref);
