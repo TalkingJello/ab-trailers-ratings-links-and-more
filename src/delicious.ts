@@ -1,7 +1,7 @@
 import { NAME } from "./constants";
 import { clearCache } from "./helpers/cache";
 import { log } from "./helpers/log";
-import { MetadataProvider } from "./providers/MetadataProvider";
+import { MetadataProvider, ProviderFlags } from "./providers/MetadataProvider";
 
 function deliciousSubHeading(s: HTMLElement, title: string) {
   const h3 = $(`<h3 style="
@@ -67,6 +67,28 @@ export function insertDeliciousSettingsUi(providers: MetadataProvider[]) {
     )
   );
 
+  delicious.settings.init("showAverageRating", true);
+  s.appendChild(
+    delicious.settings.createCheckbox(
+      "showAverageRating",
+      "Show Average Rating",
+      "When pulling ratings from multiple providers, show the average rating widget."
+    )
+  );
+
+  delicious.settings.init(`ab-${ProviderFlags.Score}-average-weight`, 1);
+  s.appendChild(
+    delicious.settings.createNumberInput(
+      `ab-${ProviderFlags.Score}-average-weight`,
+      "AB Rating Weight in Average",
+      `The weight of the AnimeBytes rating in the average score widget. Can be set to 0 to not include AnimeBytes score in the average. 1 is the default.`,
+      {
+        default: "1",
+        required: true,
+      }
+    )
+  );
+
   // Provider specific
   providers.forEach((p) => {
     deliciousSubHeading(s, p.name);
@@ -80,8 +102,43 @@ export function insertDeliciousSettingsUi(providers: MetadataProvider[]) {
   );
   clearCacheButton.click(() => {
     clearCache();
+    alert("Cache cleared!");
   });
   $(s).append(clearCacheButton);
+
+  const resetSettingsButton = $(
+    `<input type="button" style="margin-left: 20px;" value="Reset Settings"/>`
+  );
+  resetSettingsButton.click(() => {
+    // confirm
+    if (!confirm("Are you sure you want to reset all settings?")) {
+      return;
+    }
+
+    GM_listValues()
+      .filter((v) => !v.startsWith("cache_") && !v.endsWith("-api-key"))
+      .forEach((name) => GM_deleteValue(name));
+
+    window.location.reload();
+  });
+  $(s).append(resetSettingsButton);
+
+  const resetApiKeysButton = $(
+    `<input type="button" style="margin-left: 20px;" value="Reset API Keys"/>`
+  );
+  resetApiKeysButton.click(() => {
+    // confirm
+    if (!confirm("Are you sure you want to reset to the default API keys?")) {
+      return;
+    }
+
+    GM_listValues()
+      .filter((v) => v.endsWith("-api-key"))
+      .forEach((name) => GM_deleteValue(name));
+
+    window.location.reload();
+  });
+  $(s).append(resetApiKeysButton);
 
   delicious.settings.insertSection(section);
 }
@@ -95,5 +152,9 @@ export const settings = {
     GM_getValue("trailerAfterSynopsis", "false")
   ),
   linksInNewTab: JSON.parse(GM_getValue("linksInNewTab", "true")),
+  showAverageRating: JSON.parse(GM_getValue("showAverageRating", "true")),
+  abScoreAverageWeight: JSON.parse(
+    GM_getValue(`ab-${ProviderFlags.Score}-average-weight`, "1")
+  ),
 };
 log("settings", settings);

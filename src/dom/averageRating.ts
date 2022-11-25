@@ -1,4 +1,5 @@
 import { UNIQUE } from "../constants";
+import { settings } from "../delicious";
 import { subscribeToAbScoreChange } from "../helpers/subscribeToAbScoreChange";
 import { MetadataProvider, Score } from "../providers/MetadataProvider";
 
@@ -65,11 +66,13 @@ export function injectAverageRating(
     () =>
       subscribeToAbScoreChange((abScore) => {
         const averageRating =
+          scores.reduce((acc, [p, score]) => {
+            return acc + p.getScoreWeightForAverage() * score.rating;
+          }, abScore.rating * settings.abScoreAverageWeight) /
           scores.reduce(
-            (acc, [_, score]) => acc + score.rating,
-            abScore.rating
-          ) /
-          (scores.length + 1);
+            (acc, [p]) => acc + p.getScoreWeightForAverage(),
+            settings.abScoreAverageWeight
+          );
         const totalVotes = scores.reduce(
           (acc, [_, score]) => acc + score.votes,
           abScore.votes

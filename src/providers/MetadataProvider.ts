@@ -83,6 +83,25 @@ export abstract class MetadataProvider {
     return GM_getValue(`provider-${this.name}-api-key`, this.defaultApiKey);
   }
 
+  getScoreWeightForAverage() {
+    const res = JSON.parse(
+      GM_getValue(
+        `provider-${this.name}-${ProviderFlags.Score}-average-weight`,
+        "1"
+      )
+    );
+
+    if (typeof res !== "number") {
+      GM_setValue(
+        `provider-${this.name}-${ProviderFlags.Score}-average-weight`,
+        "1"
+      );
+      return 1;
+    }
+
+    return res;
+  }
+
   private marker: JQuery<HTMLElement>;
   private insertSetApiKeySettings(s: HTMLElement) {
     const id = `${UNIQUE}-provider-${this.name}-api-key-settings`;
@@ -198,6 +217,22 @@ export abstract class MetadataProvider {
           `provider-${this.name}-enable-${ProviderFlags.Score}`,
           "Enable Rating",
           `Show ratings from ${this.name}`
+        )
+      );
+
+      delicious.settings.init(
+        `provider-${this.name}-${ProviderFlags.Score}-average-weight`,
+        1
+      );
+      s.appendChild(
+        delicious.settings.createNumberInput(
+          `provider-${this.name}-${ProviderFlags.Score}-average-weight`,
+          "Weight in Average Score",
+          `The weight of this provider's score in the average score widget. Can be set to 0 to not include this provider's score in the average. 1 is the default.`,
+          {
+            default: "1",
+            required: true,
+          }
         )
       );
     }

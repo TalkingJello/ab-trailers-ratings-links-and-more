@@ -1,3 +1,4 @@
+import { settings } from "../delicious";
 import { MetadataProvider, Score } from "../providers/MetadataProvider";
 import { injectAnimeBytesRating } from "./animeBytesRating";
 import { injectAverageRating } from "./averageRating";
@@ -51,9 +52,12 @@ export async function injectRatingsToPage(providers: MetadataProvider[]) {
   secondPart.css("gap", "18px");
   secondPart.css("flex-wrap", "wrap");
   secondPart.css("align-items", "start");
+  secondPart.css("padding-top", "0");
   // AnimeBytes rating
   injectAnimeBytesRating(secondPart);
   // Average rating
-  injectAverageRating(valid, secondPart);
+  if (settings.showAverageRating) {
+    injectAverageRating(valid, secondPart);
+  }
   secondPart.appendTo(container);
 }
