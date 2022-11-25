@@ -7,3 +7,5 @@ export const NAME = name;
 export const UNIQUE = "abtexr";
 export const ANIDB_CLIENT_NAME = "abtexr";
 export const ANIDB_CLIENT_VERSION = "1";
+export const TMDB_DEFAULT_API_KEY = "fe87c50cd11a52087a6e806623385b73";
+export const MAL_DEFAULT_API_KEY = "015cace9ce2a8dbd866dd7d9fa3ab561";

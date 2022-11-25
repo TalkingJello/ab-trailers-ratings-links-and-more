@@ -36,6 +36,7 @@ export abstract class MetadataProvider {
   abstract name: string;
   apiKeyInstructionsLink = "";
   apiKeyName = "";
+  defaultApiKey = "";
   testApiKey?(): Promise<boolean>;
 
   protected abstract init(): Promise<boolean>;
@@ -74,12 +75,12 @@ export abstract class MetadataProvider {
     return;
   }
 
-  static getUserApiKey(providerName: string) {
-    return GM_getValue(`provider-${providerName}-api-key`, "");
+  static getUserApiKey(providerName: string, defaultKey = "") {
+    return GM_getValue(`provider-${providerName}-api-key`, defaultKey);
   }
 
   getUserApiKey() {
-    return GM_getValue(`provider-${this.name}-api-key`, "");
+    return GM_getValue(`provider-${this.name}-api-key`, this.defaultApiKey);
   }
 
   private marker: JQuery<HTMLElement>;

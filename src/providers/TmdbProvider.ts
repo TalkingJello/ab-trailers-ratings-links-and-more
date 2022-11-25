@@ -1,4 +1,4 @@
-import { TMDB_LANGUAGE, UNIQUE } from "../constants";
+import { TMDB_DEFAULT_API_KEY, TMDB_LANGUAGE, UNIQUE } from "../constants";
 import { ratingBox } from "../dom/ratingBox";
 import { checkCache, saveCache } from "../helpers/cache";
 import { ensureTmdbItem } from "../helpers/ensureTmdbIdentified";
@@ -66,7 +66,10 @@ export class TmdbProvider extends MetadataProvider {
     url.searchParams.set("language", TMDB_LANGUAGE);
     url.searchParams.set("query", name);
     log(`fetching ${url.toString()}`);
-    url.searchParams.set("api_key", this.getUserApiKey("TMDB"));
+    url.searchParams.set(
+      "api_key",
+      this.getUserApiKey("TMDB", TMDB_DEFAULT_API_KEY)
+    );
 
     const res = await gmFetchJson({
       method: "GET",
@@ -113,7 +116,10 @@ export class TmdbProvider extends MetadataProvider {
     url.searchParams.set("language", TMDB_LANGUAGE);
     url.searchParams.set("append_to_response", "external_ids,videos");
     log(`fetching ${url.toString()}`);
-    url.searchParams.set("api_key", this.getUserApiKey("TMDB"));
+    url.searchParams.set(
+      "api_key",
+      this.getUserApiKey("TMDB", TMDB_DEFAULT_API_KEY)
+    );
 
     const res = await gmFetchJson({
       method: "GET",
@@ -145,6 +151,7 @@ export class TmdbProvider extends MetadataProvider {
   apiKeyInstructionsLink =
     "https://developers.themoviedb.org/3/getting-started/introduction";
   apiKeyName = "API Key (v3 auth)";
+  defaultApiKey = TMDB_DEFAULT_API_KEY;
   flags: Set<ProviderFlags> = new Set([
     ProviderFlags.Score,
     ProviderFlags.Trailers,

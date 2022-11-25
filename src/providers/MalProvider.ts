@@ -1,3 +1,4 @@
+import { MAL_DEFAULT_API_KEY } from "../constants";
 import { malIdFromPage } from "../dom/idsFromPage";
 import { ratingBox } from "../dom/ratingBox";
 import { checkCache, saveCache } from "../helpers/cache";
@@ -10,6 +11,7 @@ export class MalProvider extends MetadataProvider {
   flags = new Set([ProviderFlags.Score, ProviderFlags.ApiKey]);
   apiKeyInstructionsLink = "https://myanimelist.net/forum/?topicid=1973141";
   apiKeyName = "Client ID";
+  defaultApiKey = MAL_DEFAULT_API_KEY;
   private malId: string;
 
   async init() {
