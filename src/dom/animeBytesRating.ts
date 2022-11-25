@@ -157,16 +157,18 @@ export function injectAnimeBytesRating(parent: JQuery<HTMLElement>) {
             return;
           }
 
+          const defaultValue = parseInt(instance.options.defaultValue);
           // @ts-expect-error
-          $("#stars-wrapper").stars("select", instance.options.defaultValue);
+          $("#stars-wrapper").stars("select", defaultValue);
 
           instance.$stars.each(function (i: number) {
-            if (myScore < instance.options.checked && i < myScore) {
+            const current = i + 1;
+            if (myScore < defaultValue && current <= myScore) {
               $(this).addClass(`${UNIQUE}-ui-stars-star-my`);
             } else if (
-              myScore > instance.options.checked &&
-              instance.options.checked < i &&
-              i < myScore
+              myScore > defaultValue &&
+              defaultValue < current &&
+              current <= myScore
             ) {
               $(this).addClass(`${UNIQUE}-ui-stars-star-my`);
               $(this).addClass(`ui-stars-star-on`);
