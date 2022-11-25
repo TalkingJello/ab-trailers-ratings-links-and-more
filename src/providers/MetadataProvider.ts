@@ -102,6 +102,12 @@ export abstract class MetadataProvider {
     return res;
   }
 
+  isEnabled() {
+    return JSON.parse(
+      GM_getValue(`provider-${this.name}-provider-enabled`, "true")
+    );
+  }
+
   private marker: JQuery<HTMLElement>;
   private insertSetApiKeySettings(s: HTMLElement) {
     const id = `${UNIQUE}-provider-${this.name}-api-key-settings`;
@@ -193,6 +199,15 @@ export abstract class MetadataProvider {
   }
 
   insertDeliciousSettings(s: HTMLElement) {
+    delicious.settings.init(`provider-${this.name}-provider-enabled`, true);
+    s.appendChild(
+      delicious.settings.createCheckbox(
+        `provider-${this.name}-provider-enabled`,
+        `Enable ${this.name}`,
+        `Completely enable or disable using and displaying all information from ${this.name}.`
+      )
+    );
+
     if (this.flagSupported(ProviderFlags.Link)) {
       delicious.settings.init(
         `provider-${this.name}-enable-${ProviderFlags.Link}`,

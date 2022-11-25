@@ -28,15 +28,17 @@ async function main() {
   insertDeliciousSettingsUi(providers);
 
   // Inject to dom
-  injectLinksToPage(providers.filter((p) => p.flagEnabled(ProviderFlags.Link)));
+  injectLinksToPage(
+    providers.filter((p) => p.isEnabled() && p.flagEnabled(ProviderFlags.Link))
+  );
   injectRatingsToPage(
-    providers.filter((p) => p.flagEnabled(ProviderFlags.Score))
+    providers.filter((p) => p.isEnabled() && p.flagEnabled(ProviderFlags.Score))
   );
 
   const trailers: Trailer[] = [];
   const res = await Promise.allSettled(
     providers
-      .filter((p) => p.flagEnabled(ProviderFlags.Trailers))
+      .filter((p) => p.isEnabled() && p.flagEnabled(ProviderFlags.Trailers))
       .map((p) => p.getTrailers())
   );
   res.forEach((r) => {
