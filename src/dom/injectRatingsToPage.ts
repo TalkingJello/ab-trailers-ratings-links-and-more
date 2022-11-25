@@ -36,6 +36,7 @@ export async function injectRatingsToPage(providers: MetadataProvider[]) {
   const { container, body } = pageSection("Ratings");
   body.css("gap", "18px");
   body.css("flex-wrap", "wrap");
+  body.css("align-items", "start");
   synopsis.after(container);
 
   // load provider ratings
@@ -44,5 +45,9 @@ export async function injectRatingsToPage(providers: MetadataProvider[]) {
   });
 
   // AnimeBytes rating
-  injectAnimeBytesRating(body);
+  const secondPart = $(
+    `<div class="body" style="display: flex; justify-content: center;"></div>`
+  );
+  injectAnimeBytesRating(secondPart);
+  secondPart.appendTo(container);
 }
