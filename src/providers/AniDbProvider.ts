@@ -4,6 +4,7 @@ import { ratingBox } from "../dom/ratingBox";
 import { checkCache, saveCache } from "../helpers/cache";
 import { gmFetch } from "../helpers/gmFetchHelpers";
 import { log } from "../helpers/log";
+import { setThrottleUse, throttle } from "../helpers/throttle";
 import { MetadataProvider, ProviderFlags, Score } from "./MetadataProvider";
 
 export class AniDbProvider extends MetadataProvider {
@@ -33,6 +34,8 @@ export class AniDbProvider extends MetadataProvider {
       return cached as Score;
     }
 
+    await throttle("anidb", 1000 * 5);
+
     const url = new URL("http://api.anidb.net:9001/httpapi");
     url.searchParams.set("request", "anime");
     url.searchParams.set("client", ANIDB_CLIENT_NAME);
@@ -45,6 +48,8 @@ export class AniDbProvider extends MetadataProvider {
       method: "GET",
       url: url.toString(),
     });
+
+    setThrottleUse("anidb");
 
     if (!res.responseXML) {
       throw new Error("Couldn't parse AniDB response");
