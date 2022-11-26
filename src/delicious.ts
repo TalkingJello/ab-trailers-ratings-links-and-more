@@ -58,6 +58,15 @@ export function insertDeliciousSettingsUi(providers: MetadataProvider[]) {
     )
   );
 
+  delicious.settings.init("jumpToTorrentsLink", true);
+  s.appendChild(
+    delicious.settings.createCheckbox(
+      "jumpToTorrentsLink",
+      "Jump to Torrents Link",
+      "Add a link after the external anime links, that will jump to the torrent list."
+    )
+  );
+
   delicious.settings.init("trailerAfterSynopsis", false);
   s.appendChild(
     delicious.settings.createCheckbox(
@@ -148,6 +157,7 @@ export const settings = {
     GM_getValue("preferredTrailerAudioLanguage", '"any"')
   ),
   itemsOnTop: JSON.parse(GM_getValue("itemsOnTop", "true")),
+  jumpToTorrentsLink: JSON.parse(GM_getValue("jumpToTorrentsLink", "true")),
   trailerAfterSynopsis: JSON.parse(
     GM_getValue("trailerAfterSynopsis", "false")
   ),
