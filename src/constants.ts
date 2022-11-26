@@ -1,7 +1,7 @@
 import { name } from "../config/metadata.cjs";
 
 // Other constants
-export const CACHE_TIME = 1000 * 60 * 60 * 12; // 12 hours
+export const DEFAULT_CACHE_TIME = 1000 * 60 * 60 * 24; // 1 day
 export const TMDB_LANGUAGE = "en-US";
 export const NAME = name;
 export const UNIQUE = "abtexr";

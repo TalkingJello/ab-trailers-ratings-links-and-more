@@ -28,7 +28,7 @@ export class AniDbProvider extends MetadataProvider {
     }
 
     const key = `anidb_score_${this.aniDbId}`;
-    const cached = checkCache(key);
+    const cached = checkCache(key, 1000 * 60 * 60 * 24 * 2); // 2 days
     if (cached !== undefined) {
       return cached as Score;
     }

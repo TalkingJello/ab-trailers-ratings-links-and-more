@@ -1,7 +1,7 @@
-import { CACHE_TIME } from "../constants";
+import { DEFAULT_CACHE_TIME } from "../constants";
 import { log } from "./log";
 
-export function checkCache(id: string, time = CACHE_TIME) {
+export function checkCache(id: string, time = DEFAULT_CACHE_TIME) {
   const lastUpdate = GM_getValue(`cache_last_update_${id}`);
   if (typeof lastUpdate !== "number" || Date.now() > lastUpdate + time) {
     return;
