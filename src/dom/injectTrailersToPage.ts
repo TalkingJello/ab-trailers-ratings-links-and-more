@@ -62,6 +62,7 @@ export async function injectTrailersToPage(tr: WithProvider<Trailer>[]) {
 
     const trailer = promise.value;
     if (trailer.info && !trailer.info.playable) {
+      log("Unplayable trailer", trailer);
       unplayableCount++;
       return;
     }
@@ -133,7 +134,7 @@ export async function injectTrailersToPage(tr: WithProvider<Trailer>[]) {
   }
 
   if (unplayableCount > 0) {
-    log("Unplayable trailers", unplayableCount);
+    log(unplayableCount, "unplayable trailers found");
   }
 
   // select first on load

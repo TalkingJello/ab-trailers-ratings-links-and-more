@@ -30,6 +30,26 @@ export interface YoutubeItem {
   rejection?: YoutubePlayableRejection;
 }
 
+function playableAndRejectionsFromResponse(res: any) {
+  const errorRenderer =
+    res.playabilityStatus.errorScreen?.playerErrorMessageRenderer;
+
+  return {
+    playable: res.playabilityStatus.status === "OK",
+    rejection:
+      res.playabilityStatus.status !== "OK"
+        ? {
+            status: res.playabilityStatus.status as string,
+            reason: errorRenderer?.reason.simpleText as string,
+            message:
+              (errorRenderer?.subreason?.simpleText as string) ||
+              (errorRenderer?.subreason?.runs?.[0]?.text as string) ||
+              "",
+          }
+        : undefined,
+  };
+}
+
 export async function fetchYoutubeVideoInfo(
   youtubeId: string
 ): Promise<YoutubeItem> {
@@ -56,13 +76,23 @@ export async function fetchYoutubeVideoInfo(
     }
   );
 
-  if (
-    !res.videoDetails ||
-    res.videoDetails.videoId !== youtubeId ||
-    !res.playabilityStatus
-  ) {
+  if (!res.playabilityStatus) {
     log("youtube res", res);
     throw new Error("Invalid response from YouTube");
+  }
+
+  if (!res.videoDetails || res.videoDetails.videoId !== youtubeId) {
+    const item: YoutubeItem = {
+      id: youtubeId,
+      title: "",
+      lengthSeconds: 0,
+      viewCount: 0,
+      channelId: "",
+      captions: [],
+      ...playableAndRejectionsFromResponse(res),
+    };
+    saveCache(key, item);
+    return item;
   }
 
   const item: YoutubeItem = {
@@ -70,20 +100,10 @@ export async function fetchYoutubeVideoInfo(
     title: res.videoDetails.title,
     lengthSeconds: parseInt(res.videoDetails.lengthSeconds),
     viewCount: parseInt(res.videoDetails.viewCount),
-    playable: res.playabilityStatus.status === "OK",
     channelId: res.videoDetails.channelId,
     captions:
       res.captions?.playerCaptionsTracklistRenderer?.captionTracks || [],
-    rejection:
-      res.playabilityStatus.status !== "OK"
-        ? {
-            status: res.playabilityStatus.status,
-            reason: res.playabilityStatus.reason,
-            message:
-              res.playabilityStatus.errorScreen?.playerErrorMessageRenderer
-                ?.subreason?.runs[0]?.text || "",
-          }
-        : undefined,
+    ...playableAndRejectionsFromResponse(res),
   };
 
   saveCache(key, item);
