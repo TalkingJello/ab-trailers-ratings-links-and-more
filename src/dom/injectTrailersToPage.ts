@@ -14,11 +14,22 @@ export async function injectTrailersToPage(tr: Trailer[]) {
   if (tr.length === 0) {
     return;
   }
-  let unplayableCount = 0;
+
+  // dedupe trailers
+  const map: Record<string, TrailerWithInfo> = {};
+  tr.forEach((t) => {
+    const key = `${t.site}:${t.key}`;
+    if (!map[key]) {
+      map[key] = t;
+    }
+  });
+
+  // Fetch youtube video info
   let trailers: TrailerWithInfo[] = [];
+  let unplayableCount = 0;
   (
     await Promise.allSettled(
-      tr.map(async (t): Promise<TrailerWithInfo> => {
+      Object.values(map).map(async (t): Promise<TrailerWithInfo> => {
         if (t.site !== VideoSite.YouTube) {
           return t;
         }
