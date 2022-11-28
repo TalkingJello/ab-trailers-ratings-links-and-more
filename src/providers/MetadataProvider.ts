@@ -1,4 +1,5 @@
 import { UNIQUE } from "../constants";
+import { YoutubeItem } from "../helpers/fetchYoutubeVideoInfo";
 import { log } from "../helpers/log";
 
 export enum VideoSite {
@@ -11,6 +12,8 @@ export interface Trailer {
   key: string;
   name: string;
 }
+
+export type TrailerWithInfo = Trailer & { info?: YoutubeItem };
 
 export interface Score {
   rating: number;

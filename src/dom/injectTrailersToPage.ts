@@ -1,47 +1,57 @@
 import { UNIQUE } from "../constants";
 import { settings } from "../delicious";
-import { isDubbed, isSubbed } from "../helpers/titleFilters";
-import { Trailer, VideoSite } from "../providers/MetadataProvider";
+import { fetchYoutubeVideoInfo } from "../helpers/fetchYoutubeVideoInfo";
+import { log } from "../helpers/log";
+import { sortTrailers } from "../helpers/sortTrailers";
+import {
+  Trailer,
+  TrailerWithInfo,
+  VideoSite,
+} from "../providers/MetadataProvider";
 import { pageSection } from "./pageSection";
 
-function sortTrailers(tr: Trailer[]) {
-  const trailers = [...tr];
-  trailers.sort((a, b) => {
-    let s = 0;
-
-    // Try to prefer subs over raw
-    if (isSubbed(a.name)) {
-      s -= 1;
-    }
-    if (isSubbed(b.name)) {
-      s += 1;
-    }
-
-    // Dub preference
-    if (settings.preferredTrailerAudioLanguage !== "any") {
-      const mod = settings.preferredTrailerAudioLanguage === "dubbed" ? -2 : 2;
-
-      if (isDubbed(a.name)) {
-        s += mod;
-      }
-
-      if (isDubbed(b.name)) {
-        s -= mod;
-      }
-    }
-
-    return s;
-  });
-
-  return trailers;
-}
-
-export function injectTrailersToPage(tr: Trailer[]) {
+export async function injectTrailersToPage(tr: Trailer[]) {
   if (tr.length === 0) {
     return;
   }
+  let unplayableCount = 0;
+  let trailers: TrailerWithInfo[] = [];
+  (
+    await Promise.allSettled(
+      tr.map(async (t): Promise<TrailerWithInfo> => {
+        if (t.site !== VideoSite.YouTube) {
+          return t;
+        }
 
-  const trailers = sortTrailers(tr);
+        try {
+          const info = await fetchYoutubeVideoInfo(t.key);
+
+          return {
+            ...t,
+            name: info.playable ? t.name : `*UNPLAYABLE* ${t.name}`,
+            info,
+          };
+        } catch (err) {
+          // @TODO more handling needed?
+          log("Failed to fetch youtube video info -", t.key, err);
+          return t;
+        }
+      })
+    )
+  ).forEach((p) => {
+    if (p.status === "rejected") {
+      return;
+    }
+
+    if (p.value.info && !p.value.info.playable) {
+      unplayableCount++;
+      return;
+    }
+
+    trailers.push(p.value);
+  });
+
+  trailers = sortTrailers(trailers);
 
   // General layout
   const synopsis = $('.box > .head > strong:contains("Plot Synopsis")')
@@ -74,7 +84,7 @@ export function injectTrailersToPage(tr: Trailer[]) {
         break;
       default:
         setError(
-          `Unsupported tmdb trailer site: ${trailer.site}. Please report to TalkingJello with the link to the torrent group`
+          `Unsupported trailer site: ${trailer.site}. Please report to TalkingJello with the link to the torrent group`
         );
     }
 
@@ -102,6 +112,10 @@ export function injectTrailersToPage(tr: Trailer[]) {
       selectTrailer(parseInt(select.val() as string));
     });
     head.append(select);
+  }
+
+  if (unplayableCount > 0) {
+    log("Unplayable trailers", unplayableCount);
   }
 
   // select first on load
