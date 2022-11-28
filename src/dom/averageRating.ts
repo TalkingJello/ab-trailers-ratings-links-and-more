@@ -1,5 +1,6 @@
 import { UNIQUE } from "../constants";
 import { settings } from "../delicious";
+import { displayVotes } from "../helpers/formatVotes";
 import { subscribeToAbScoreChange } from "../helpers/subscribeToAbScoreChange";
 import { MetadataProvider, Score } from "../providers/MetadataProvider";
 
@@ -80,7 +81,7 @@ export function injectAverageRating(
 
         rating.text(`Average: ${averageRating.toFixed(2)} / 10`);
         votes.html(
-          `<i>${totalVotes.toLocaleString()}</i> total votes<br>from <i>${
+          `${displayVotes(totalVotes)} total votes<br>from <i>${
             scores.length + 1
           }</i> sources`
         );

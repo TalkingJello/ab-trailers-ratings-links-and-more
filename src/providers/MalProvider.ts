@@ -1,6 +1,6 @@
 import { MAL_DEFAULT_API_KEY } from "../constants";
 import { malIdFromPage } from "../dom/idsFromPage";
-import { ratingBox } from "../dom/ratingBox";
+import { ratingBoxFromScore } from "../dom/ratingBox";
 import { checkCache, saveCache } from "../helpers/cache";
 import { gmFetchJson } from "../helpers/gmFetchHelpers";
 import { log } from "../helpers/log";
@@ -69,18 +69,12 @@ export class MalProvider extends MetadataProvider {
   }
 
   insertScore(parent: JQuery<HTMLElement>, score: Score): void {
-    const { rating, votes, rank, breakdownLink } = score;
-
-    const { container, scale } = ratingBox(
-      `${rating} / 10`,
-      votes,
-      breakdownLink
+    const { container, image } = ratingBoxFromScore(
+      score,
+      "https://mei.animebytes.tv/ssTMPRvxBSo.png",
+      54
     );
-
-    scale.append(
-      `<img src="https://mei.animebytes.tv/ssTMPRvxBSo.png" style="width: 54px; height: 54px; border-radius: 12px;" />`
-    );
-    scale.attr("title", `Ranked #${rank}`);
+    image.css("border-radius", "12px");
 
     parent.append(container);
   }

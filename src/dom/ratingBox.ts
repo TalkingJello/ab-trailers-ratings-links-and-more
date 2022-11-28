@@ -1,6 +1,8 @@
 import { UNIQUE } from "../constants";
+import { displayVotes } from "../helpers/formatVotes";
+import { Score } from "../providers/MetadataProvider";
 
-export function ratingBox(title: string, votes: number, link: string) {
+export function ratingBox(title: string, subtitle: string, link: string) {
   const container = $(`<div
       style="
           background: 0 0;
@@ -34,7 +36,7 @@ export function ratingBox(title: string, votes: number, link: string) {
           >
           ${title}
           <br>
-          <span style="color: gray;font-size: 12.5px;"><i>${votes.toLocaleString()}</i> votes</span>
+          <span style="color: gray;font-size: 12.5px;">${subtitle}</span>
           </div>
       </div>
   `);
@@ -42,4 +44,29 @@ export function ratingBox(title: string, votes: number, link: string) {
   const scale = container.find(`.${UNIQUE}-scale-on-hover`);
 
   return { container, scale };
+}
+
+export function ratingBoxFromScore(
+  { rating, votes, breakdownLink, rank }: Score,
+  img: string,
+  imgSize: number
+) {
+  const box = ratingBox(
+    `${rating} / 10`,
+    `${displayVotes(votes)} votes`,
+    breakdownLink
+  );
+
+  if (rank) {
+    box.scale.attr("title", `Ranked #${rank}`);
+  }
+
+  const image = $(
+    `<img src="${img}" style="width: ${imgSize}px; height: ${imgSize}px;" />`
+  ).appendTo(box.scale);
+
+  return {
+    ...box,
+    image,
+  };
 }

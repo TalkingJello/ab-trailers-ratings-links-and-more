@@ -1,4 +1,5 @@
 import { UNIQUE } from "../constants";
+import { displayVotes } from "../helpers/formatVotes";
 import { log } from "../helpers/log";
 import { subscribeToAbScoreChange } from "../helpers/subscribeToAbScoreChange";
 
@@ -80,7 +81,7 @@ export function injectAnimeBytesRating(parent: JQuery<HTMLElement>) {
       subscribeToAbScoreChange((score, myScore, deleteHref) => {
         log("Updating AnimeBytes rating", score, myScore, deleteHref);
         rating.text(`${score.rating} / 10`);
-        votes.html(`<i>${score.votes.toLocaleString()}</i> votes`);
+        votes.html(`${displayVotes(score.votes)} votes`);
 
         if (myScore !== 0) {
           myRatingDiv.slideDown(500);

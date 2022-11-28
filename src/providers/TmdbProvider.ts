@@ -2,6 +2,7 @@ import { TMDB_DEFAULT_API_KEY, TMDB_LANGUAGE, UNIQUE } from "../constants";
 import { ratingBox } from "../dom/ratingBox";
 import { checkCache, saveCache } from "../helpers/cache";
 import { ensureTmdbItem } from "../helpers/ensureTmdbIdentified";
+import { displayVotes } from "../helpers/formatVotes";
 import { gmFetchJson } from "../helpers/gmFetchHelpers";
 import { log } from "../helpers/log";
 import {
@@ -256,7 +257,7 @@ export class TmdbProvider extends MetadataProvider {
 
     const { container, scale } = ratingBox(
       "TMDB Score",
-      votes,
+      `${displayVotes(votes)} votes`,
       `https://www.themoviedb.org/${this.item.mediaType}/${this.item.id}`
     );
 

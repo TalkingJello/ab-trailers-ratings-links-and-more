@@ -1,6 +1,6 @@
 import { ANIDB_CLIENT_NAME, ANIDB_CLIENT_VERSION } from "../constants";
 import { aniDbIdFromPage } from "../dom/idsFromPage";
-import { ratingBox } from "../dom/ratingBox";
+import { ratingBoxFromScore } from "../dom/ratingBox";
 import { checkCache, saveCache } from "../helpers/cache";
 import { gmFetch } from "../helpers/gmFetchHelpers";
 import { log } from "../helpers/log";
@@ -75,16 +75,10 @@ export class AniDbProvider extends MetadataProvider {
   }
 
   insertScore(parent: JQuery<HTMLElement>, score: Score): void {
-    const { rating, votes, breakdownLink } = score;
-
-    const { container, scale } = ratingBox(
-      `${rating} / 10`,
-      votes,
-      breakdownLink
-    );
-
-    scale.append(
-      `<img src="https://mei.animebytes.tv/qN7pRFMzaEs.png" style="width: 68px; height: 68px;" />`
+    const { container } = ratingBoxFromScore(
+      score,
+      "https://mei.animebytes.tv/qN7pRFMzaEs.png",
+      68
     );
 
     parent.append(container);
