@@ -41,23 +41,15 @@ export async function injectRatingsToPage(providers: MetadataProvider[]) {
   body.css("align-items", "start");
   synopsis.after(container);
 
-  // load provider ratings
+  // load providers ratings
   valid.forEach(([provider, score]) => {
     provider.insertScore(body, score);
   });
 
-  const secondPart = $(
-    `<div class="body" style="display: flex; justify-content: center;"></div>`
-  );
-  secondPart.css("gap", "18px");
-  secondPart.css("flex-wrap", "wrap");
-  secondPart.css("align-items", "start");
-  secondPart.css("padding-top", "0");
   // AnimeBytes rating
-  injectAnimeBytesRating(secondPart);
+  injectAnimeBytesRating(body);
   // Average rating
   if (settings.showAverageRating) {
-    injectAverageRating(valid, secondPart);
+    injectAverageRating(valid, body);
   }
-  secondPart.appendTo(container);
 }
