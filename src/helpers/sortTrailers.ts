@@ -1,6 +1,7 @@
 import { settings } from "../delicious";
 import { SEASON_PART_REGEX, tmdbQueryFromPage } from "../dom/tmdbQueryFromPage";
 import { TrailerWithInfo, WithProvider } from "../providers/MetadataProvider";
+import { log } from "./log";
 import { dubbedInTitle, subbedInTitle } from "./trailerTitleFilters";
 
 function isDubbed(trailer: TrailerWithInfo) {
@@ -20,6 +21,8 @@ const res = tmdbQueryFromPage(false);
 // since they will be specific to the season/part
 // unlike tmdb which will have trailers for the whole series
 const preferMal = res ? SEASON_PART_REGEX.test(res.name) : false;
+log("preferMal", preferMal);
+log("res", res);
 
 type Tier = (trailer: WithProvider<TrailerWithInfo>) => boolean;
 // Tiers of preference
@@ -53,14 +56,18 @@ export function sortTrailers(tr: WithProvider<TrailerWithInfo>[]) {
   trailers.sort((a, b) => {
     let s = 0;
 
-    tiers.forEach((fn, i) => {
+    for (const fn of tiers) {
+      if (s !== 0) {
+        break;
+      }
+
       if (fn(a)) {
-        s -= 2 ** i;
+        s -= 1;
       }
       if (fn(b)) {
-        s += 2 ** i;
+        s += 1;
       }
-    });
+    }
 
     // Default compare as last resort to order numbered trailers
     if (a.name < b.name) {

@@ -2,7 +2,7 @@ import { TmdbMediaType } from "../providers/TmdbProvider";
 
 type Preprocessor = (title: string) => string;
 
-export const SEASON_PART_REGEX = /(Season|Part) \d+/i;
+export const SEASON_PART_REGEX = /(Season|Part) \d+/gim;
 
 const preprocessors: Preprocessor[] = [
   // Remove season/part number
