@@ -1,20 +1,28 @@
 import { settings } from "../delicious";
-import { MetadataProvider, Score } from "../providers/MetadataProvider";
+import {
+  MetadataProvider,
+  Score,
+  WithProvider,
+} from "../providers/MetadataProvider";
 import { injectAnimeBytesRating } from "./animeBytesRating";
 import { injectAverageRating } from "./averageRating";
 import { pageSection } from "./pageSection";
 
 export async function injectRatingsToPage(providers: MetadataProvider[]) {
   const res = await Promise.allSettled(
-    providers.map(
-      async (p): Promise<[MetadataProvider, Score | false]> => [
-        p,
-        await p.getScore(),
-      ]
-    )
+    providers.map(async (provider): Promise<WithProvider<Score> | false> => {
+      const score = await provider.getScore();
+      if (score) {
+        return {
+          provider,
+          ...score,
+        };
+      }
+      return false;
+    })
   );
 
-  const valid: [MetadataProvider, Score][] = [];
+  const valid: WithProvider<Score>[] = [];
   res.forEach((r) => {
     if (r.status === "rejected") {
       // @TODO: Handle error
@@ -22,8 +30,8 @@ export async function injectRatingsToPage(providers: MetadataProvider[]) {
       return;
     }
 
-    if (r.value[1] !== false) {
-      valid.push(r.value as [MetadataProvider, Score]);
+    if (r.value !== false) {
+      valid.push(r.value);
     }
   });
   if (valid.length === 0) {
@@ -42,8 +50,8 @@ export async function injectRatingsToPage(providers: MetadataProvider[]) {
   synopsis.after(container);
 
   // load providers ratings
-  valid.forEach(([provider, score]) => {
-    provider.insertScore(body, score);
+  valid.forEach((score) => {
+    score.provider.insertScore(body, score);
   });
 
   // AnimeBytes rating

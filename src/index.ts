@@ -6,7 +6,12 @@ import { placeSynopsis } from "./dom/placeSynopsis";
 import { AniDbProvider } from "./providers/AniDbProvider";
 import { ImdbProvider } from "./providers/ImdbProvider";
 import { MalJikanProvider } from "./providers/MalJikanProvider";
-import { ProviderFlags, Trailer } from "./providers/MetadataProvider";
+import {
+  MetadataProvider,
+  ProviderFlags,
+  Trailer,
+  WithProvider,
+} from "./providers/MetadataProvider";
 import { TmdbProvider } from "./providers/TmdbProvider";
 import { TvdbProvider } from "./providers/tvdbProvider";
 import consensusCss from "./style/consensus";
@@ -36,11 +41,16 @@ async function main() {
     providers.filter((p) => p.isEnabled() && p.flagEnabled(ProviderFlags.Score))
   );
 
-  const trailers: Trailer[] = [];
+  const trailers: WithProvider<Trailer>[] = [];
   const res = await Promise.allSettled(
     providers
       .filter((p) => p.isEnabled() && p.flagEnabled(ProviderFlags.Trailers))
-      .map((p) => p.getTrailers())
+      .map(
+        async (p): Promise<[MetadataProvider, Trailer[]]> => [
+          p,
+          await p.getTrailers(),
+        ]
+      )
   );
   res.forEach((r) => {
     if (r.status === "rejected") {
@@ -48,7 +58,13 @@ async function main() {
       return;
     }
 
-    trailers.push(...r.value);
+    const [provider, providerTrailers] = r.value;
+    providerTrailers.forEach((t) => {
+      trailers.push({
+        provider,
+        ...t,
+      });
+    });
   });
 
   injectTrailersToPage(trailers);

@@ -2,10 +2,10 @@ import { UNIQUE } from "../constants";
 import { settings } from "../delicious";
 import { displayVotes } from "../helpers/formatVotes";
 import { subscribeToAbScoreChange } from "../helpers/subscribeToAbScoreChange";
-import { MetadataProvider, Score } from "../providers/MetadataProvider";
+import { Score, WithProvider } from "../providers/MetadataProvider";
 
 export function injectAverageRating(
-  scores: [MetadataProvider, Score][],
+  scores: WithProvider<Score>[],
   parent: JQuery<HTMLElement>
 ) {
   const container = $(`<div style="
@@ -67,15 +67,15 @@ export function injectAverageRating(
     () =>
       subscribeToAbScoreChange((abScore) => {
         const averageRating =
-          scores.reduce((acc, [p, score]) => {
-            return acc + p.getScoreWeightForAverage() * score.rating;
+          scores.reduce((acc, { provider, rating }) => {
+            return acc + provider.getScoreWeightForAverage() * rating;
           }, abScore.rating * settings.abScoreAverageWeight) /
           scores.reduce(
-            (acc, [p]) => acc + p.getScoreWeightForAverage(),
+            (acc, { provider }) => acc + provider.getScoreWeightForAverage(),
             settings.abScoreAverageWeight
           );
         const totalVotes = scores.reduce(
-          (acc, [_, score]) => acc + score.votes,
+          (acc, { votes }) => acc + votes,
           abScore.votes
         );
 

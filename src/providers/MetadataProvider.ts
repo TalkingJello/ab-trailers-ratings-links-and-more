@@ -34,6 +34,8 @@ export enum ProviderFlags {
   ApiKey = "api-key",
 }
 
+export type WithProvider<T> = T & { provider: MetadataProvider };
+
 export abstract class MetadataProvider {
   private initilizationPromise: Promise<boolean>;
   abstract name: string;

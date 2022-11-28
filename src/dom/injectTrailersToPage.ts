@@ -7,59 +7,66 @@ import {
   Trailer,
   TrailerWithInfo,
   VideoSite,
+  WithProvider,
 } from "../providers/MetadataProvider";
 import { pageSection } from "./pageSection";
 
-export async function injectTrailersToPage(tr: Trailer[]) {
+export async function injectTrailersToPage(tr: WithProvider<Trailer>[]) {
   if (tr.length === 0) {
     return;
   }
 
   // dedupe trailers
-  const map: Record<string, TrailerWithInfo> = {};
-  tr.forEach((t) => {
-    const key = `${t.site}:${t.key}`;
-    if (!map[key]) {
-      map[key] = t;
+  const map: Record<string, WithProvider<Trailer>> = {};
+  tr.forEach((trailer) => {
+    const { site, key } = trailer;
+    const id = `${site}:${key}`;
+    if (!map[id]) {
+      map[id] = trailer;
     }
   });
 
   // Fetch youtube video info
-  let trailers: TrailerWithInfo[] = [];
+  let trailers: WithProvider<TrailerWithInfo>[] = [];
   let unplayableCount = 0;
   (
     await Promise.allSettled(
-      Object.values(map).map(async (t): Promise<TrailerWithInfo> => {
-        if (t.site !== VideoSite.YouTube) {
-          return t;
-        }
+      Object.values(map).map(
+        async (trailer): Promise<WithProvider<TrailerWithInfo>> => {
+          if (trailer.site !== VideoSite.YouTube) {
+            return trailer;
+          }
 
-        try {
-          const info = await fetchYoutubeVideoInfo(t.key);
+          try {
+            const info = await fetchYoutubeVideoInfo(trailer.key);
 
-          return {
-            ...t,
-            name: info.playable ? t.name : `*UNPLAYABLE* ${t.name}`,
-            info,
-          };
-        } catch (err) {
-          // @TODO more handling needed?
-          log("Failed to fetch youtube video info -", t.key, err);
-          return t;
+            return {
+              ...trailer,
+              name: info.playable
+                ? trailer.name
+                : `*UNPLAYABLE* ${trailer.name}`,
+              info,
+            };
+          } catch (err) {
+            // @TODO more handling needed?
+            log("Failed to fetch youtube video info -", trailer.key, err);
+            return trailer;
+          }
         }
-      })
+      )
     )
-  ).forEach((p) => {
-    if (p.status === "rejected") {
+  ).forEach((promise) => {
+    if (promise.status === "rejected") {
       return;
     }
 
-    if (p.value.info && !p.value.info.playable) {
+    const trailer = promise.value;
+    if (trailer.info && !trailer.info.playable) {
       unplayableCount++;
       return;
     }
 
-    trailers.push(p.value);
+    trailers.push(trailer);
   });
 
   trailers = sortTrailers(trailers);

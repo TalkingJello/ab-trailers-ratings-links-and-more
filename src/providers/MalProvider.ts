@@ -1,3 +1,10 @@
+/*
+# NOTE:
+This is here for legacy purposes, in case we need to
+revert to using MAL api instead of Jikan api.
+The default API key no longer works and needs to be updated
+*/
+
 import { MAL_DEFAULT_API_KEY } from "../constants";
 import { malIdFromPage } from "../dom/idsFromPage";
 import { ratingBoxFromScore } from "../dom/ratingBox";
