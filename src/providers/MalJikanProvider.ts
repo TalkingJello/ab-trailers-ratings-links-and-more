@@ -56,7 +56,7 @@ export class MalJikanProvider extends MetadataProvider {
 
     const key = `mal_jikan_score_${this.malId}`;
     const cached = checkCache(key);
-    if (cached !== undefined && typeof cached.votes !== "number") {
+    if (cached !== undefined && typeof cached.votes === "number") {
       return cached as Score;
     }
 
