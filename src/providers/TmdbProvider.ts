@@ -54,13 +54,55 @@ export interface TmdbItem extends TmdbIdentified {
 }
 
 export class TmdbProvider extends MetadataProvider {
-  static async identify(type: TmdbMediaType, name: string) {
+  private static reduceNameQuery(name: string): string | false {
+    // Try again with less parts (can help with named seasons etc...)
+    const reducedName = name
+      .split(/[:\|\-–\/]/)
+      .slice(0, -1)
+      .join(" ")
+      .replace(/\s+/, " ")
+      .trim();
+
+    // realistically reducedName is never going to be the same as name
+    // but I don't know if there is some edge case I missed (shouldn't be)
+    // can probably be proven with graph theory or something
+    // but it doesn't harm to check to avoid loops
+    // I am just that scared of looping hehehe
+    // although it should be cached anyways so at least we wouldn't be spamming tmdb
+    // would just end up erroring with a stack overflow
+    // alright I am done overthinking this
+    if (!reducedName || reducedName === name) {
+      return false;
+    }
+
+    return reducedName;
+  }
+
+  static async identify(
+    type: TmdbMediaType,
+    name: string
+  ): Promise<TmdbIdentified | false> {
     const key = `tmdb_${type}_by_name_${name}`;
     const cached = checkCache(key);
+
+    // Try reduced query (will probably also be cached)
+    if (cached === false) {
+      log("cached result was false");
+      const reducedName = this.reduceNameQuery(name);
+
+      if (reducedName) {
+        log(`trying reduced query ${reducedName}`);
+        return await this.identify(type, reducedName);
+      }
+
+      return false;
+    }
+    // Return cached result
     if (cached !== undefined) {
       return cached as TmdbIdentified;
     }
 
+    // No cached result, try to identify
     const url = new URL(`https://api.themoviedb.org/3/search/${type}`);
     url.searchParams.set("api_key", "REDACTED");
     url.searchParams.set("include_adult", "true");
@@ -80,8 +122,15 @@ export class TmdbProvider extends MetadataProvider {
     if (typeof res.total_results !== "number") {
       throw new Error("invalid response from tmdb");
     }
+
     if (res.total_results < 1) {
       saveCache(key, false);
+      const reducedName = this.reduceNameQuery(name);
+
+      if (reducedName) {
+        return await this.identify(type, reducedName);
+      }
+
       return false;
     }
 
@@ -106,7 +155,7 @@ export class TmdbProvider extends MetadataProvider {
   // add some sort of match fixing for tmdb
   static async fetchItem(identified: TmdbIdentified): Promise<TmdbItem> {
     const { mediaType, id } = identified;
-    const key = `tmdb_fetch_${mediaType}_${id}`;
+    const key = `tmdb_item_${mediaType}_${id}`;
     const cached = checkCache(key);
     if (cached !== undefined) {
       return cached as TmdbItem;
