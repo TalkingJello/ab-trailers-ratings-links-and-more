@@ -102,7 +102,9 @@ export class MalJikanProvider extends MetadataProvider {
       }
 
       trailers.push({
-        name: item.title.replace(/PV/gi, "Promotional Video"),
+        name: item.title
+          .replace(/PV/gi, "Promotional Video")
+          .replace(/CM/gi, "Commercial"),
         site: VideoSite.YouTube,
         key: item.trailer.youtube_id,
       });

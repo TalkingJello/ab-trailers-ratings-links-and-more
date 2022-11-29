@@ -1,8 +1,14 @@
 import { settings } from "../delicious";
 import { SEASON_PART_REGEX, tmdbQueryFromPage } from "../dom/tmdbQueryFromPage";
 import { TrailerWithInfo, WithProvider } from "../providers/MetadataProvider";
-import { log } from "./log";
-import { dubbedInTitle, subbedInTitle } from "./trailerTitleFilters";
+import {
+  announcement,
+  commercial,
+  dubbedInTitle,
+  promotionalVideo,
+  subbedInTitle,
+  teaser,
+} from "./trailerTitleFilters";
 
 function isDubbed(trailer: TrailerWithInfo) {
   return (
@@ -16,16 +22,22 @@ function isDubbed(trailer: TrailerWithInfo) {
   );
 }
 
-const res = tmdbQueryFromPage(false);
 // if it's a season or part, we should prefer trailers from MAL
 // since they will be specific to the season/part
 // unlike tmdb which will have trailers for the whole series
-const preferMal = res ? SEASON_PART_REGEX.test(res.name) : false;
-log("preferMal", preferMal);
-log("res", res);
+const res = tmdbQueryFromPage(false);
+const preferMal = res
+  ? SEASON_PART_REGEX.test(res.name) || res.name.includes(":")
+  : false;
 
-type Tier = (trailer: WithProvider<TrailerWithInfo>) => boolean;
+const PREFERRED_CHANNELS = [
+  "UC6pGDc4bFGD1_36IKv3FnYg", // Crunchyroll
+  "UCRuJMENPfFiMYoqCXleDLLQ", // Madman Anime
+  "UCWOA1ZGywLbqmigxE4Qlvuw", // Netflix
+];
+
 // Tiers of preference
+type Tier = (trailer: WithProvider<TrailerWithInfo>) => boolean;
 const tiers: Tier[] = [
   // Prefer MAL
   (trailer) => preferMal && trailer.provider.name === "MAL",
@@ -38,17 +50,23 @@ const tiers: Tier[] = [
 
     return preferDubbed ? isDubbed(t) : !isDubbed(t);
   },
-  // Crunchyroll is (I think) always (at least) subbed
-  (t) => t.info && t.info.channelId === "UC6pGDc4bFGD1_36IKv3FnYg",
+  // Preferred channels that are (I think) always subbed
+  (t) => t.info && PREFERRED_CHANNELS.includes(t.info.channelId),
   // Try to prefer subs over raw
   (t) =>
     subbedInTitle(t.name) ||
     (t.info &&
-      // if it has auto generated English subtitles,
-      // it means it probably has english audio
       !!t.info.captions.find(
         (c) => c.languageCode === "en" && c.kind !== "asr"
       )),
+  // "Regular" trailers
+  (t) => !teaser(t.name) && !commercial(t.name) && !promotionalVideo(t.name),
+  // Promotional Videos
+  (t) => promotionalVideo(t.name),
+  // Teasers
+  (t) => teaser(t.name),
+  // Commercials and announcements
+  (t) => commercial(t.name) || announcement(t.name),
 ];
 
 export function sortTrailers(tr: WithProvider<TrailerWithInfo>[]) {

@@ -9,3 +9,19 @@ export function subbedInTitle(title: string) {
     title.toLowerCase().includes("sub") || title.toLowerCase().includes("eng")
   );
 }
+
+export function promotionalVideo(title: string) {
+  return title.toLowerCase().includes("promotional video");
+}
+
+export function commercial(title: string) {
+  return title.toLowerCase().includes("commercial");
+}
+
+export function teaser(title: string) {
+  return title.toLowerCase().includes("teaser");
+}
+
+export function announcement(title: string) {
+  return title.toLowerCase().includes("announcement");
+}
