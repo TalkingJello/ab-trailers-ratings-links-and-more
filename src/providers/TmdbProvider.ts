@@ -83,7 +83,7 @@ export class TmdbProvider extends MetadataProvider {
     name: string
   ): Promise<TmdbIdentified | false> {
     const key = `tmdb_${type}_by_name_${name}`;
-    const cached = checkCache(key);
+    const cached = checkCache(key, 1000 * 60 * 60 * 24 * 3); // 3 days
 
     // Try reduced query (will probably also be cached)
     if (cached === false) {
@@ -156,7 +156,7 @@ export class TmdbProvider extends MetadataProvider {
   static async fetchItem(identified: TmdbIdentified): Promise<TmdbItem> {
     const { mediaType, id } = identified;
     const key = `tmdb_item_${mediaType}_${id}`;
-    const cached = checkCache(key);
+    const cached = checkCache(key, 1000 * 60 * 60 * 24 * 3); // 3 days
     if (cached !== undefined) {
       return cached as TmdbItem;
     }
