@@ -591,6 +591,9 @@ const internetOrWebsiteDownErrorTitle = (websiteName) => `Make sure you're conne
 function log(...rest) {
     console.log(`[${NAME}]`, ...rest);
 }
+function logError(...rest) {
+    logError(`[${NAME}]`, ...rest);
+}
 
 ;// CONCATENATED MODULE: ./src/helpers/cache.ts
 
@@ -956,6 +959,7 @@ unsafeWindow.uiShowError = uiShowError;
 
 
 
+
 async function injectLinksToPage(providers) {
     const links = $("#content > div.thin > h3");
     if (settings.linksInNewTab) {
@@ -981,7 +985,7 @@ async function injectLinksToPage(providers) {
     }));
     res.forEach((r) => {
         if (r.status === "rejected") {
-            console.error(r.reason);
+            logError(r.reason);
             return;
         }
         const link = r.value;
@@ -1001,14 +1005,12 @@ function displayVotes(votes) {
 }
 
 ;// CONCATENATED MODULE: ./src/helpers/subscribeToAbScoreChange.ts
-
 function abScoreFromPage() {
     let myRating = 0;
     const match = $("#message")
         .text()
         .match(/^My vote: (\d+)$/);
     const deleteHref = $("#rating_stats > a").attr("href");
-    log("deleteHref", deleteHref);
     if (match &&
         match[1] &&
         $("#message").css("display") !== "none" &&
@@ -1144,7 +1146,6 @@ function injectAnimeBytesRating(parent) {
             // @ts-expect-error Tint stars
             const instance = $("#stars-wrapper").stars("instance");
             if (!instance) {
-                log(`Stars instance not found`);
                 return;
             }
             const defaultValue = parseInt(instance.options.defaultValue);
@@ -1253,6 +1254,7 @@ function injectAverageRating(scores, parent) {
 
 
 
+
 async function injectRatingsToPage(providers) {
     const res = await Promise.allSettled(providers.map(async (provider) => {
         try {
@@ -1273,7 +1275,7 @@ async function injectRatingsToPage(providers) {
     const valid = [];
     res.forEach((r) => {
         if (r.status === "rejected") {
-            console.error(r.reason);
+            logError(r.reason);
             return;
         }
         if (r.value !== false) {
@@ -1373,7 +1375,7 @@ async function fetchYoutubeVideoInfo(youtubeId) {
         videoId: youtubeId,
     });
     if (!res.playabilityStatus) {
-        log("youtube res", res);
+        logError("youtube res", res);
         throw new Error("Invalid response from YouTube");
     }
     if (!res.videoDetails || res.videoDetails.videoId !== youtubeId) {
@@ -1528,7 +1530,6 @@ class TmdbProvider extends MetadataProvider {
         const cached = checkCache(key, 1000 * 60 * 60 * 24 * 3); // 3 days
         // Try reduced query (will probably also be cached)
         if (cached === false) {
-            log("cached result was false");
             const reducedName = this.reduceNameQuery(name);
             if (reducedName) {
                 log(`trying reduced query ${reducedName}`);
@@ -1599,7 +1600,7 @@ class TmdbProvider extends MetadataProvider {
         if (res.id !== id ||
             !Array.isArray(res.videos?.results) ||
             !res.external_ids) {
-            console.log("invalid response from tmdb", res);
+            logError("invalid response from tmdb", res);
             throw new Error("invalid response from tmdb");
         }
         const out = {
@@ -1625,7 +1626,6 @@ class TmdbProvider extends MetadataProvider {
     ]);
     item;
     async init() {
-        log(`initializing with api key ${this.getUserApiKey()}`);
         const res = await ensureTmdbItem();
         if (!res) {
             return false;
@@ -1791,7 +1791,7 @@ class TmdbProvider extends MetadataProvider {
             throw new Error(res.status_message);
         }
         if (res.images?.secure_base_url !== "https://image.tmdb.org/t/p/") {
-            log("api key test failed", res);
+            logError("api key test failed", res);
             throw new Error("Invalid response from TMDB");
         }
         return true;
@@ -1969,7 +1969,7 @@ async function injectTrailersToPage(tr) {
 but smart trailer sorting might not work as expected.
 Auto detecting youtube region limits will also not work for this trailer,
 so it might not be playable.`, err);
-            console.error("Failed to fetch youtube video info -", trailer.key, err);
+            logError("Failed to fetch youtube video info -", trailer.key, err);
             return trailer;
         }
     }))).forEach((promise) => {
@@ -2128,7 +2128,7 @@ class AniDbProvider extends MetadataProvider {
         if (cached !== undefined) {
             return cached;
         }
-        await throttle("anidb", 1000 * 5);
+        await throttle("anidb", 1000 * 3);
         const url = new URL("http://api.anidb.net:9001/httpapi");
         url.searchParams.set("request", "anime");
         url.searchParams.set("client", ANIDB_CLIENT_NAME);
@@ -2218,7 +2218,7 @@ class ImdbProvider extends MetadataProvider {
             }
             const json = JSON.parse(data.textContent);
             if (typeof json.url !== "string" || !url.endsWith(json.url)) {
-                log("IMDB JSON", json);
+                logError("IMDB JSON", json);
                 throw new Error(`Invalid json from imdb. Expected ${url} got ${json.url}`);
             }
             this.json = json;
@@ -2226,7 +2226,7 @@ class ImdbProvider extends MetadataProvider {
             return true;
         }
         catch (err) {
-            log("Failed to parse IMDB page: ", err);
+            logError("Failed to parse IMDB page: ", err);
             throw new Error(`failed to parse imdb page: ${err.message}`);
         }
     }
@@ -2249,7 +2249,7 @@ class ImdbProvider extends MetadataProvider {
         if (!rating ||
             typeof rating.ratingValue !== "number" ||
             typeof rating.ratingCount !== "number") {
-            log("Invalid rating from IMDB", rating);
+            logError("Invalid rating from IMDB", rating);
             deleteCache(`imdb_scrape_json_${this.imdbId}`);
             throw new Error("Invalid rating response from IMDB");
         }
@@ -2266,6 +2266,7 @@ class ImdbProvider extends MetadataProvider {
 }
 
 ;// CONCATENATED MODULE: ./src/providers/MalJikanProvider.ts
+
 
 
 
@@ -2291,11 +2292,11 @@ class MalJikanProvider extends MetadataProvider {
             url: url,
         });
         if (res.error) {
-            log("mal res", res);
+            logError("mal res", res);
             throw new Error(`Failed to fetch Jikan (MAL) - ${res.message} - ${res.error}`);
         }
         if (!res.data) {
-            log("mal res", res);
+            logError("mal res", res);
             throw new Error("Invalid response from Jikan (MAL)");
         }
         return res.data;
@@ -2310,7 +2311,9 @@ class MalJikanProvider extends MetadataProvider {
         if (cached !== undefined && typeof cached.votes === "number") {
             return cached;
         }
+        await throttle("jikan", 800);
         const data = await this.fetchJikans(`https://api.jikan.moe/v4/anime/${this.malId}`);
+        setThrottleUse("jikan");
         const score = {
             votes: data.scored_by,
             rating: data.score,
@@ -2332,7 +2335,7 @@ class MalJikanProvider extends MetadataProvider {
         }
         const data = await this.fetchJikans(`https://api.jikan.moe/v4/anime/${this.malId}/videos`);
         if (!Array.isArray(data.promo)) {
-            log("jikans data", data);
+            logError("jikans data", data);
             throw new Error("Invalid response from Jikan (MAL)");
         }
         const trailers = [];
@@ -2903,6 +2906,7 @@ var update = injectStylesIntoStyleTag_default()(main/* default */.Z, options);
 
 
 
+
 async function src_main() {
     // General
     GM_addStyle(consensus);
@@ -2938,7 +2942,7 @@ async function src_main() {
     }));
     res.forEach((r) => {
         if (r.status === "rejected") {
-            console.error(r.reason);
+            logError(r.reason);
             return;
         }
         const [provider, providerTrailers] = r.value;
