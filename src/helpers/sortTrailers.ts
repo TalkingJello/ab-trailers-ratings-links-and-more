@@ -60,7 +60,11 @@ const tiers: Tier[] = [
         (c) => c.languageCode === "en" && c.kind !== "asr"
       )),
   // "Regular" trailers
-  (t) => !teaser(t.name) && !commercial(t.name) && !promotionalVideo(t.name),
+  (t) =>
+    !teaser(t.name) &&
+    !commercial(t.name) &&
+    !promotionalVideo(t.name) &&
+    !announcement(t.name),
   // Promotional Videos
   (t) => promotionalVideo(t.name),
   // Teasers
