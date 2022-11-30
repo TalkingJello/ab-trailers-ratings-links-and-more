@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          AB - Trailers, Ratings, Links (and more?)
 // @namespace     TalkingJello@animebytes.tv
-// @version       1.0.0
+// @version       1.0.1
 // @author        TalkingJello
 // @source        https://github.com/TalkingJello/ab-trailers-ratings-links-and-more
 // @description   Adds trailers, additional ratings, links (and more?) to AB anime pages
@@ -498,7 +498,7 @@ module.exports = {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"ab-trailers-ratings-links-and-more","description":"Adds trailers, additional ratings, links (and more?) to AB anime pages","version":"1.0.0","author":"TalkingJello","scripts":{"format":"prettier -w ./","build":"webpack --config config/webpack.config.prod.cjs","dev":"webpack --config config/webpack.config.dev.cjs","prepare":"husky install","lint-staged":"lint-staged"},"repository":{"type":"git","url":"https://github.com/TalkingJello/ab-trailers-ratings-links-and-more"},"private":true,"dependencies":{},"lint-staged":{"*.{js,jsx,ts,tsx,json}":["prettier --ignore-path ./.prettierignore --write "]},"devDependencies":{"@types/greasemonkey":"^4.0.4","@types/jquery":"^3.5.14","@types/node":"^18.11.8","browserslist":"^4.21.4","cross-env":"^7.0.3","css-loader":"^6.7.1","husky":"^8.0.1","less":"^4.1.3","less-loader":"^11.1.0","lint-staged":"^13.0.3","prettier":"^2.7.1","style-loader":"^3.3.1","ts-loader":"^9.4.1","typescript":"^4.8.4","userscript-metadata-webpack-plugin":"^0.2.12","webpack":"^5.74.0","webpack-bundle-analyzer":"^4.7.0","webpack-cli":"^4.10.0","webpack-livereload-plugin":"^3.0.2","webpack-merge":"^5.8.0","webpack-sources":"^3.2.3"}}');
+module.exports = JSON.parse('{"name":"ab-trailers-ratings-links-and-more","description":"Adds trailers, additional ratings, links (and more?) to AB anime pages","version":"1.0.1","author":"TalkingJello","scripts":{"format":"prettier -w ./","build":"webpack --config config/webpack.config.prod.cjs","dev":"webpack --config config/webpack.config.dev.cjs","prepare":"husky install","lint-staged":"lint-staged"},"repository":{"type":"git","url":"https://github.com/TalkingJello/ab-trailers-ratings-links-and-more"},"private":true,"dependencies":{},"lint-staged":{"*.{js,jsx,ts,tsx,json}":["prettier --ignore-path ./.prettierignore --write "]},"devDependencies":{"@types/greasemonkey":"^4.0.4","@types/jquery":"^3.5.14","@types/node":"^18.11.8","browserslist":"^4.21.4","cross-env":"^7.0.3","css-loader":"^6.7.1","husky":"^8.0.1","less":"^4.1.3","less-loader":"^11.1.0","lint-staged":"^13.0.3","prettier":"^2.7.1","style-loader":"^3.3.1","ts-loader":"^9.4.1","typescript":"^4.8.4","userscript-metadata-webpack-plugin":"^0.2.12","webpack":"^5.74.0","webpack-bundle-analyzer":"^4.7.0","webpack-cli":"^4.10.0","webpack-livereload-plugin":"^3.0.2","webpack-merge":"^5.8.0","webpack-sources":"^3.2.3"}}');
 
 /***/ })
 
@@ -1890,7 +1890,10 @@ const tiers = [
         (t.info &&
             !!t.info.captions.find((c) => c.languageCode === "en" && c.kind !== "asr")),
     // "Regular" trailers
-    (t) => !teaser(t.name) && !commercial(t.name) && !promotionalVideo(t.name),
+    (t) => !teaser(t.name) &&
+        !commercial(t.name) &&
+        !promotionalVideo(t.name) &&
+        !announcement(t.name),
     // Promotional Videos
     (t) => promotionalVideo(t.name),
     // Teasers
