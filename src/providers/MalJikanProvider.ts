@@ -3,6 +3,7 @@ import { ratingBoxFromScore } from "../dom/ratingBox";
 import { checkCache, saveCache } from "../helpers/cache";
 import { gmFetchJson } from "../helpers/gmFetchHelpers";
 import { log, logError } from "../helpers/log";
+import { setThrottleUse, throttle } from "../helpers/throttle";
 import {
   MetadataProvider,
   ProviderFlags,
@@ -60,9 +61,11 @@ export class MalJikanProvider extends MetadataProvider {
       return cached as Score;
     }
 
+    await throttle("jikan", 800);
     const data = await this.fetchJikans(
       `https://api.jikan.moe/v4/anime/${this.malId}`
     );
+    setThrottleUse("jikan");
 
     const score: Score = {
       votes: data.scored_by,
