@@ -34,7 +34,7 @@ export class AniDbProvider extends MetadataProvider {
       return cached as Score;
     }
 
-    await throttle("anidb", 1000 * 5);
+    await throttle("anidb", 1000 * 3);
 
     const url = new URL("http://api.anidb.net:9001/httpapi");
     url.searchParams.set("request", "anime");
