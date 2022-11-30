@@ -1,3 +1,4 @@
+import { internetOrWebsiteDownErrorTitle } from "../constants";
 import { settings } from "../delicious";
 import {
   MetadataProvider,
@@ -6,27 +7,37 @@ import {
 } from "../providers/MetadataProvider";
 import { injectAnimeBytesRating } from "./animeBytesRating";
 import { injectAverageRating } from "./averageRating";
+import { uiShowError } from "./displayErrors";
 import { pageSection } from "./pageSection";
 
 export async function injectRatingsToPage(providers: MetadataProvider[]) {
   const res = await Promise.allSettled(
     providers.map(async (provider): Promise<WithProvider<Score> | false> => {
-      const score = await provider.getScore();
-      if (score) {
+      try {
+        const score = await provider.getScore();
+        if (!score) {
+          return false;
+        }
+
         return {
           provider,
           ...score,
         };
+      } catch (err) {
+        uiShowError(
+          `Failed to fetch rating from ${provider.name}`,
+          internetOrWebsiteDownErrorTitle(provider.name),
+          err
+        );
+        throw err;
       }
-      return false;
     })
   );
 
   const valid: WithProvider<Score>[] = [];
   res.forEach((r) => {
     if (r.status === "rejected") {
-      // @TODO: Handle error
-      console.error("Failed to get score from provider", r.reason);
+      console.error(r.reason);
       return;
     }
 

@@ -9,6 +9,7 @@ import {
   VideoSite,
   WithProvider,
 } from "../providers/MetadataProvider";
+import { uiShowError } from "./displayErrors";
 import { pageSection } from "./pageSection";
 
 export async function injectTrailersToPage(tr: WithProvider<Trailer>[]) {
@@ -48,8 +49,19 @@ export async function injectTrailersToPage(tr: WithProvider<Trailer>[]) {
               info,
             };
           } catch (err) {
-            // @TODO more handling needed?
-            log("Failed to fetch youtube video info -", trailer.key, err);
+            uiShowError(
+              `*Not* Fatal - Failed to fetch youtube data for trailer: <i>${trailer.name}</i>`,
+              `The trailer will still be displayed,
+but smart trailer sorting might not work as expected.
+Auto detecting youtube region limits will also not work for this trailer,
+so it might not be playable.`,
+              err
+            );
+            console.error(
+              "Failed to fetch youtube video info -",
+              trailer.key,
+              err
+            );
             return trailer;
           }
         }

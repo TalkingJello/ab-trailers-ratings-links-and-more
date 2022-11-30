@@ -1,4 +1,6 @@
+import { internetOrWebsiteDownErrorTitle } from "./constants";
 import { insertDeliciousSettingsUi } from "./delicious";
+import { errorsSection, uiShowError } from "./dom/displayErrors";
 import { injectLinksToPage } from "./dom/injectLinksToPage";
 import { injectRatingsToPage } from "./dom/injectRatingsToPage";
 import { injectTrailersToPage } from "./dom/injectTrailersToPage";
@@ -13,7 +15,7 @@ import {
   WithProvider,
 } from "./providers/MetadataProvider";
 import { TmdbProvider } from "./providers/TmdbProvider";
-import { TvdbProvider } from "./providers/tvdbProvider";
+import { TvdbProvider } from "./providers/TvdbProvider";
 import consensusCss from "./style/consensus";
 import "./style/main.less";
 
@@ -34,6 +36,11 @@ async function main() {
   insertDeliciousSettingsUi(providers);
 
   // Inject to dom
+  const synopsis = $('.box > .head > strong:contains("Plot Synopsis")')
+    .parent()
+    .parent();
+  synopsis.before(errorsSection.container);
+
   injectLinksToPage(
     providers.filter((p) => p.isEnabled() && p.flagEnabled(ProviderFlags.Link))
   );
@@ -45,16 +52,22 @@ async function main() {
   const res = await Promise.allSettled(
     providers
       .filter((p) => p.isEnabled() && p.flagEnabled(ProviderFlags.Trailers))
-      .map(
-        async (p): Promise<[MetadataProvider, Trailer[]]> => [
-          p,
-          await p.getTrailers(),
-        ]
-      )
+      .map(async (p): Promise<[MetadataProvider, Trailer[]]> => {
+        try {
+          return [p, await p.getTrailers()];
+        } catch (err) {
+          uiShowError(
+            `Failed to fetch trailers from ${p.name}`,
+            internetOrWebsiteDownErrorTitle(p.name),
+            err
+          );
+          throw err;
+        }
+      })
   );
   res.forEach((r) => {
     if (r.status === "rejected") {
-      // TODO: Handle error
+      console.error(r.reason);
       return;
     }
 

@@ -1,5 +1,7 @@
+import { internetOrWebsiteDownErrorTitle } from "../constants";
 import { settings } from "../delicious";
 import { MetadataProvider } from "../providers/MetadataProvider";
+import { uiShowError } from "./displayErrors";
 
 export async function injectLinksToPage(providers: MetadataProvider[]) {
   const links = $("#content > div.thin > h3");
@@ -19,11 +21,23 @@ export async function injectLinksToPage(providers: MetadataProvider[]) {
     links.after(jumpToTorrents);
   }
 
-  const res = await Promise.allSettled(providers.map((p) => p.getLink()));
+  const res = await Promise.allSettled(
+    providers.map(async (p) => {
+      try {
+        return await p.getLink();
+      } catch (err) {
+        uiShowError(
+          `Failed to create external link to ${p.name}`,
+          internetOrWebsiteDownErrorTitle(p.name),
+          err
+        );
+        throw err;
+      }
+    })
+  );
   res.forEach((r) => {
     if (r.status === "rejected") {
-      // TODO: Handle error
-      console.error("Failed to get link from provider", r.reason);
+      console.error(r.reason);
       return;
     }
 
