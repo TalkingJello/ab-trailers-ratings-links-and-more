@@ -1,5 +1,4 @@
 import { Score } from "../providers/MetadataProvider";
-import { log } from "./log";
 
 function abScoreFromPage(): [Score, number, string] {
   let myRating = 0;
@@ -7,7 +6,7 @@ function abScoreFromPage(): [Score, number, string] {
     .text()
     .match(/^My vote: (\d+)$/);
   const deleteHref = $("#rating_stats > a").attr("href");
-  log("deleteHref", deleteHref);
+
   if (
     match &&
     match[1] &&

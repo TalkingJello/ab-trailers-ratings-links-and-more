@@ -10,7 +10,7 @@ import { malIdFromPage } from "../dom/idsFromPage";
 import { ratingBoxFromScore } from "../dom/ratingBox";
 import { checkCache, saveCache } from "../helpers/cache";
 import { gmFetchJson } from "../helpers/gmFetchHelpers";
-import { log } from "../helpers/log";
+import { log, logError } from "../helpers/log";
 import { MetadataProvider, ProviderFlags, Score } from "./MetadataProvider";
 
 export class MalProvider extends MetadataProvider {
@@ -56,9 +56,8 @@ export class MalProvider extends MetadataProvider {
       },
     });
 
-    log("mal res", res);
-
     if (res.id.toString() !== this.malId) {
+      logError("mal res", res);
       throw new Error("Invalid response from MAL");
     }
 

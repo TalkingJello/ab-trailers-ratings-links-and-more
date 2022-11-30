@@ -2,7 +2,7 @@ import { malIdFromPage } from "../dom/idsFromPage";
 import { ratingBoxFromScore } from "../dom/ratingBox";
 import { checkCache, saveCache } from "../helpers/cache";
 import { gmFetchJson } from "../helpers/gmFetchHelpers";
-import { log } from "../helpers/log";
+import { log, logError } from "../helpers/log";
 import {
   MetadataProvider,
   ProviderFlags,
@@ -34,14 +34,14 @@ export class MalJikanProvider extends MetadataProvider {
     });
 
     if (res.error) {
-      log("mal res", res);
+      logError("mal res", res);
       throw new Error(
         `Failed to fetch Jikan (MAL) - ${res.message} - ${res.error}`
       );
     }
 
     if (!res.data) {
-      log("mal res", res);
+      logError("mal res", res);
       throw new Error("Invalid response from Jikan (MAL)");
     }
 
@@ -91,7 +91,7 @@ export class MalJikanProvider extends MetadataProvider {
     );
 
     if (!Array.isArray(data.promo)) {
-      log("jikans data", data);
+      logError("jikans data", data);
       throw new Error("Invalid response from Jikan (MAL)");
     }
 

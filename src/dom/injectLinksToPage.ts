@@ -1,5 +1,6 @@
 import { internetOrWebsiteDownErrorTitle } from "../constants";
 import { settings } from "../delicious";
+import { logError } from "../helpers/log";
 import { MetadataProvider } from "../providers/MetadataProvider";
 import { uiShowError } from "./displayErrors";
 
@@ -37,7 +38,7 @@ export async function injectLinksToPage(providers: MetadataProvider[]) {
   );
   res.forEach((r) => {
     if (r.status === "rejected") {
-      console.error(r.reason);
+      logError(r.reason);
       return;
     }
 

@@ -1,7 +1,7 @@
 import { UNIQUE } from "../constants";
 import { settings } from "../delicious";
 import { fetchYoutubeVideoInfo } from "../helpers/fetchYoutubeVideoInfo";
-import { log } from "../helpers/log";
+import { log, logError } from "../helpers/log";
 import { sortTrailers } from "../helpers/sortTrailers";
 import {
   Trailer,
@@ -57,11 +57,7 @@ Auto detecting youtube region limits will also not work for this trailer,
 so it might not be playable.`,
               err
             );
-            console.error(
-              "Failed to fetch youtube video info -",
-              trailer.key,
-              err
-            );
+            logError("Failed to fetch youtube video info -", trailer.key, err);
             return trailer;
           }
         }

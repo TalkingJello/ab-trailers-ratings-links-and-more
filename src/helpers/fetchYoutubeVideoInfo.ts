@@ -1,6 +1,6 @@
 import { checkCache, saveCache } from "./cache";
 import { gmFetchJson } from "./gmFetchHelpers";
-import { log } from "./log";
+import { logError } from "./log";
 
 export interface YoutubePlayableRejection {
   status: string;
@@ -77,7 +77,7 @@ export async function fetchYoutubeVideoInfo(
   );
 
   if (!res.playabilityStatus) {
-    log("youtube res", res);
+    logError("youtube res", res);
     throw new Error("Invalid response from YouTube");
   }
 

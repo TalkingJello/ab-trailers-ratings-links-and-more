@@ -2,7 +2,7 @@ import { ratingBoxFromScore } from "../dom/ratingBox";
 import { checkCache, deleteCache, saveCache } from "../helpers/cache";
 import { ensureTmdbItem } from "../helpers/ensureTmdbIdentified";
 import { gmFetch } from "../helpers/gmFetchHelpers";
-import { log } from "../helpers/log";
+import { log, logError } from "../helpers/log";
 import {
   MetadataProvider,
   OutLink,
@@ -67,7 +67,7 @@ export class ImdbProvider extends MetadataProvider {
 
       const json = JSON.parse(data.textContent);
       if (typeof json.url !== "string" || !url.endsWith(json.url)) {
-        log("IMDB JSON", json);
+        logError("IMDB JSON", json);
         throw new Error(
           `Invalid json from imdb. Expected ${url} got ${json.url}`
         );
@@ -77,7 +77,7 @@ export class ImdbProvider extends MetadataProvider {
       saveCache(key, json);
       return true;
     } catch (err) {
-      log("Failed to parse IMDB page: ", err);
+      logError("Failed to parse IMDB page: ", err);
       throw new Error(`failed to parse imdb page: ${err.message}`);
     }
   }
@@ -106,7 +106,7 @@ export class ImdbProvider extends MetadataProvider {
       typeof rating.ratingValue !== "number" ||
       typeof rating.ratingCount !== "number"
     ) {
-      log("Invalid rating from IMDB", rating);
+      logError("Invalid rating from IMDB", rating);
       deleteCache(`imdb_scrape_json_${this.imdbId}`);
       throw new Error("Invalid rating response from IMDB");
     }

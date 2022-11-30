@@ -5,6 +5,7 @@ import { injectLinksToPage } from "./dom/injectLinksToPage";
 import { injectRatingsToPage } from "./dom/injectRatingsToPage";
 import { injectTrailersToPage } from "./dom/injectTrailersToPage";
 import { placeSynopsis } from "./dom/placeSynopsis";
+import { logError } from "./helpers/log";
 import { AniDbProvider } from "./providers/AniDbProvider";
 import { ImdbProvider } from "./providers/ImdbProvider";
 import { MalJikanProvider } from "./providers/MalJikanProvider";
@@ -67,7 +68,7 @@ async function main() {
   );
   res.forEach((r) => {
     if (r.status === "rejected") {
-      console.error(r.reason);
+      logError(r.reason);
       return;
     }
 

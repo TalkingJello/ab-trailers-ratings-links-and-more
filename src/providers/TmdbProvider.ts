@@ -4,7 +4,7 @@ import { checkCache, saveCache } from "../helpers/cache";
 import { ensureTmdbItem } from "../helpers/ensureTmdbIdentified";
 import { displayVotes } from "../helpers/formatVotes";
 import { gmFetchJson } from "../helpers/gmFetchHelpers";
-import { log } from "../helpers/log";
+import { log, logError } from "../helpers/log";
 import {
   MetadataProvider,
   OutLink,
@@ -87,7 +87,6 @@ export class TmdbProvider extends MetadataProvider {
 
     // Try reduced query (will probably also be cached)
     if (cached === false) {
-      log("cached result was false");
       const reducedName = this.reduceNameQuery(name);
 
       if (reducedName) {
@@ -181,7 +180,7 @@ export class TmdbProvider extends MetadataProvider {
       !Array.isArray(res.videos?.results) ||
       !res.external_ids
     ) {
-      console.log("invalid response from tmdb", res);
+      logError("invalid response from tmdb", res);
       throw new Error("invalid response from tmdb");
     }
 
@@ -211,8 +210,6 @@ export class TmdbProvider extends MetadataProvider {
   private item: TmdbItem;
 
   async init() {
-    log(`initializing with api key ${this.getUserApiKey()}`);
-
     const res = await ensureTmdbItem();
     if (!res) {
       return false;
@@ -405,7 +402,7 @@ export class TmdbProvider extends MetadataProvider {
     }
 
     if (res.images?.secure_base_url !== "https://image.tmdb.org/t/p/") {
-      log("api key test failed", res);
+      logError("api key test failed", res);
       throw new Error("Invalid response from TMDB");
     }
 

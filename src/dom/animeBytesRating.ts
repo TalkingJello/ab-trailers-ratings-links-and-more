@@ -91,7 +91,6 @@ export function injectAnimeBytesRating(parent: JQuery<HTMLElement>) {
           // @ts-expect-error Tint stars
           const instance = $("#stars-wrapper").stars("instance");
           if (!instance) {
-            log(`Stars instance not found`);
             return;
           }
 
