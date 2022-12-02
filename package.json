@@ -1,7 +1,7 @@
 {
   "name": "ab-trailers-ratings-links-and-more",
   "description": "Adds trailers, additional ratings, links (and more?) to AB anime pages",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "TalkingJello",
   "scripts": {
     "format": "prettier -w ./",
