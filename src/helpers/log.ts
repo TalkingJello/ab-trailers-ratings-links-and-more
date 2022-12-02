@@ -5,5 +5,5 @@ export function log(...rest: any[]) {
 }
 
 export function logError(...rest: any[]) {
-  logError(`[${NAME}]`, ...rest);
+  console.error(`[${NAME}]`, ...rest);
 }

@@ -51,12 +51,9 @@ export class AniDbProvider extends MetadataProvider {
 
     setThrottleUse("anidb");
 
-    if (!res.responseXML) {
-      throw new Error("Couldn't parse AniDB response");
-    }
-
     try {
-      const d = res.responseXML;
+      const parser = new DOMParser();
+      const d = parser.parseFromString(res.responseText, "text/xml");
       const rating = d
         .getElementsByTagName("ratings")[0]
         .getElementsByTagName("permanent")[0];
