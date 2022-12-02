@@ -5,6 +5,7 @@ import { ensureTmdbItem } from "../helpers/ensureTmdbIdentified";
 import { displayVotes } from "../helpers/formatVotes";
 import { gmFetchJson } from "../helpers/gmFetchHelpers";
 import { log, logError } from "../helpers/log";
+import { tierSort } from "../helpers/tierSort";
 import {
   MetadataProvider,
   OutLink,
@@ -98,7 +99,7 @@ export class TmdbProvider extends MetadataProvider {
     }
     // Return cached result
     if (cached !== undefined) {
-      return cached as TmdbIdentified;
+      // return cached as TmdbIdentified;
     }
 
     // No cached result, try to identify
@@ -134,8 +135,11 @@ export class TmdbProvider extends MetadataProvider {
     }
 
     // try to find the first match with animation genre (16) first
-    const entry =
-      res.results.find((e: any) => e.genre_ids.includes(16)) || res.results[0];
+    const entry = tierSort(res.results as any[], [
+      (e) => e.genre_ids.includes(16),
+      (e) => e.original_language === "ja",
+      (e) => (e.name as string).toLowerCase() === name.toLowerCase(),
+    ])[0];
     if (!entry || typeof entry.id !== "number") {
       throw new Error("invalid response from tmdb");
     }
