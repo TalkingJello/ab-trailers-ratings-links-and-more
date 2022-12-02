@@ -1,6 +1,7 @@
 import { settings } from "../delicious";
 import { SEASON_PART_REGEX, tmdbQueryFromPage } from "../dom/tmdbQueryFromPage";
 import { TrailerWithInfo, WithProvider } from "../providers/MetadataProvider";
+import { SortTier, tierSort } from "./tierSort";
 import {
   announcement,
   commercial,
@@ -37,8 +38,7 @@ const PREFERRED_CHANNELS = [
 ];
 
 // Tiers of preference
-type Tier = (trailer: WithProvider<TrailerWithInfo>) => boolean;
-const tiers: Tier[] = [
+const tiers: SortTier<WithProvider<TrailerWithInfo>>[] = [
   // Prefer MAL
   (trailer) => preferMal && trailer.provider.name === "MAL",
   // Dubs
@@ -74,33 +74,15 @@ const tiers: Tier[] = [
 ];
 
 export function sortTrailers(tr: WithProvider<TrailerWithInfo>[]) {
-  const trailers = [...tr];
-  trailers.sort((a, b) => {
-    let s = 0;
-
-    for (const fn of tiers) {
-      if (s !== 0) {
-        break;
-      }
-
-      if (fn(a)) {
-        s -= 1;
-      }
-      if (fn(b)) {
-        s += 1;
-      }
-    }
-
+  return tierSort(tr, tiers, (a, b) => {
     // Default compare as last resort to order numbered trailers
     if (a.name < b.name) {
-      s -= 0.1;
+      return -0.1;
     }
     if (a.name > b.name) {
-      s += 0.1;
+      return 0.1;
     }
 
-    return s;
+    return 0;
   });
-
-  return trailers;
 }
