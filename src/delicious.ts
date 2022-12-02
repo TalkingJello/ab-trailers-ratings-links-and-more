@@ -106,6 +106,43 @@ export function insertDeliciousSettingsUi(providers: MetadataProvider[]) {
 
   // Advanced
   deliciousSubHeading(s, "Advanced");
+  // MediaInfo Improvements interactions
+  $(s).append(
+    `<p>If you are using <a href="https://animebytes.tv/forums.php?action=viewthread&threadid=27557" target="_blank"><i>MediaInfo Improvements</i> userscript</a> ,
+and experience issues with the average rating widget wrapping to a new line on it's own...
+(this happens because MediaInfo Improvements script makes the main torrent page section take more space)
+Consider enabling <b>one</b> of the following options.
+The right solution for you depends on your screen size, browser window size, and zoom level. Try them both out!
+</p>`
+  );
+
+  delicious.settings.init("tryToNotWrapRatings", false);
+  s.appendChild(
+    delicious.settings.createCheckbox(
+      "tryToNotWrapRatings",
+      "Try to Avoid Ratings Wrap",
+      `Reduces space between each rating source,
+which should help avoid wrapping and keep all ratings in one big row.
+Downside is that the ratings will be a bit more squished together
+and that depending on your screen size and zoom level, the original issue can still occur.`
+    )
+  );
+  delicious.settings.init("abAndAverageOnSeperateRow", false);
+  s.appendChild(
+    delicious.settings.createCheckbox(
+      "abAndAverageOnSeperateRow",
+      "AB and Average Scores on Seperate Row",
+      `Puts the AnimeBytes and average score widgets on a seperate row from the other providers.
+This in essence "forces" a wrap,
+but in ensures they are wrapped together which looks better.
+Downside is that you will have 2 rows of ratings instead of 1,
+but the ratings will be more spaced out and there is no risk of still wrapping
+like with the other option.`
+    )
+  );
+
+  // Buttons
+  deliciousSubHeading(s, "Funny Looking Buttons");
   const clearCacheButton = $(
     `<input type="button" style="margin-left: 20px;" value="Clear Cache"/>`
   );
@@ -165,6 +202,10 @@ export const settings = {
   showAverageRating: JSON.parse(GM_getValue("showAverageRating", "true")),
   abScoreAverageWeight: JSON.parse(
     GM_getValue(`ab-${ProviderFlags.Score}-average-weight`, "1")
+  ),
+  tryToNotWrapRatings: JSON.parse(GM_getValue("tryToNotWrapRatings", "false")),
+  abAndAverageOnSeperateRow: JSON.parse(
+    GM_getValue("abAndAverageOnSeperateRow", "false")
   ),
 };
 log("settings", settings);
