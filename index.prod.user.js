@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          AB - Trailers, Ratings, Links (and more?)
 // @namespace     TalkingJello@animebytes.tv
-// @version       1.0.1
+// @version       1.0.2
 // @author        TalkingJello
 // @source        https://github.com/TalkingJello/ab-trailers-ratings-links-and-more
 // @description   Adds trailers, additional ratings, links (and more?) to AB anime pages
@@ -498,7 +498,7 @@ module.exports = {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"ab-trailers-ratings-links-and-more","description":"Adds trailers, additional ratings, links (and more?) to AB anime pages","version":"1.0.1","author":"TalkingJello","scripts":{"format":"prettier -w ./","build":"webpack --config config/webpack.config.prod.cjs","dev":"webpack --config config/webpack.config.dev.cjs","prepare":"husky install","lint-staged":"lint-staged"},"repository":{"type":"git","url":"https://github.com/TalkingJello/ab-trailers-ratings-links-and-more"},"private":true,"dependencies":{},"lint-staged":{"*.{js,jsx,ts,tsx,json}":["prettier --ignore-path ./.prettierignore --write "]},"devDependencies":{"@types/greasemonkey":"^4.0.4","@types/jquery":"^3.5.14","@types/node":"^18.11.8","browserslist":"^4.21.4","cross-env":"^7.0.3","css-loader":"^6.7.1","husky":"^8.0.1","less":"^4.1.3","less-loader":"^11.1.0","lint-staged":"^13.0.3","prettier":"^2.7.1","style-loader":"^3.3.1","ts-loader":"^9.4.1","typescript":"^4.8.4","userscript-metadata-webpack-plugin":"^0.2.12","webpack":"^5.74.0","webpack-bundle-analyzer":"^4.7.0","webpack-cli":"^4.10.0","webpack-livereload-plugin":"^3.0.2","webpack-merge":"^5.8.0","webpack-sources":"^3.2.3"}}');
+module.exports = JSON.parse('{"name":"ab-trailers-ratings-links-and-more","description":"Adds trailers, additional ratings, links (and more?) to AB anime pages","version":"1.0.2","author":"TalkingJello","scripts":{"format":"prettier -w ./","build":"webpack --config config/webpack.config.prod.cjs","dev":"webpack --config config/webpack.config.dev.cjs","prepare":"husky install","lint-staged":"lint-staged"},"repository":{"type":"git","url":"https://github.com/TalkingJello/ab-trailers-ratings-links-and-more"},"private":true,"dependencies":{},"lint-staged":{"*.{js,jsx,ts,tsx,json}":["prettier --ignore-path ./.prettierignore --write "]},"devDependencies":{"@types/greasemonkey":"^4.0.4","@types/jquery":"^3.5.14","@types/node":"^18.11.8","browserslist":"^4.21.4","cross-env":"^7.0.3","css-loader":"^6.7.1","husky":"^8.0.1","less":"^4.1.3","less-loader":"^11.1.0","lint-staged":"^13.0.3","prettier":"^2.7.1","style-loader":"^3.3.1","ts-loader":"^9.4.1","typescript":"^4.8.4","userscript-metadata-webpack-plugin":"^0.2.12","webpack":"^5.74.0","webpack-bundle-analyzer":"^4.7.0","webpack-cli":"^4.10.0","webpack-livereload-plugin":"^3.0.2","webpack-merge":"^5.8.0","webpack-sources":"^3.2.3"}}');
 
 /***/ })
 
@@ -846,6 +846,27 @@ function insertDeliciousSettingsUi(providers) {
     });
     // Advanced
     deliciousSubHeading(s, "Advanced");
+    // MediaInfo Improvements interactions
+    $(s).append(`<p>If you are using <a href="https://animebytes.tv/forums.php?action=viewthread&threadid=27557" target="_blank"><i>MediaInfo Improvements</i> userscript</a> ,
+and experience issues with the average rating widget wrapping to a new line on it's own...
+(this happens because MediaInfo Improvements script makes the main torrent page section take more space)
+Consider enabling <b>one</b> of the following options.
+The right solution for you depends on your screen size, browser window size, and zoom level. Try them both out!
+</p>`);
+    delicious.settings.init("tryToNotWrapRatings", false);
+    s.appendChild(delicious.settings.createCheckbox("tryToNotWrapRatings", "Try to Avoid Ratings Wrap", `Reduces space between each rating source,
+which should help avoid wrapping and keep all ratings in one big row.
+Downside is that the ratings will be a bit more squished together
+and that depending on your screen size and zoom level, the original issue can still occur.`));
+    delicious.settings.init("abAndAverageOnSeperateRow", false);
+    s.appendChild(delicious.settings.createCheckbox("abAndAverageOnSeperateRow", "AB and Average Scores on Seperate Row", `Puts the AnimeBytes and average score widgets on a seperate row from the other providers.
+This in essence "forces" a wrap,
+but in ensures they are wrapped together which looks better.
+Downside is that you will have 2 rows of ratings instead of 1,
+but the ratings will be more spaced out and there is no risk of still wrapping
+like with the other option.`));
+    // Buttons
+    deliciousSubHeading(s, "Funny Looking Buttons");
     const clearCacheButton = $(`<input type="button" style="margin-left: 20px;" value="Clear Cache"/>`);
     clearCacheButton.click(() => {
         clearCache();
@@ -886,6 +907,8 @@ const settings = {
     linksInNewTab: JSON.parse(GM_getValue("linksInNewTab", "true")),
     showAverageRating: JSON.parse(GM_getValue("showAverageRating", "true")),
     abScoreAverageWeight: JSON.parse(GM_getValue(`ab-${ProviderFlags.Score}-average-weight`, "1")),
+    tryToNotWrapRatings: JSON.parse(GM_getValue("tryToNotWrapRatings", "false")),
+    abAndAverageOnSeperateRow: JSON.parse(GM_getValue("abAndAverageOnSeperateRow", "false")),
 };
 log("settings", settings);
 
@@ -1291,19 +1314,35 @@ async function injectRatingsToPage(providers) {
         .parent()
         .parent();
     const { container, body } = pageSection("Ratings");
+    synopsis.after(container);
     body.css("gap", "18px");
     body.css("flex-wrap", "wrap");
     body.css("align-items", "start");
-    synopsis.after(container);
+    if (settings.tryToNotWrapRatings) {
+        body.css("justify-content", "space-evenly");
+        body.css("padding", "10px 0");
+        body.css("gap", "18px 0");
+    }
     // load providers ratings
     valid.forEach((score) => {
         score.provider.insertScore(body, score);
     });
+    // Optional forced second row
+    const secondRatingRow = $(`<div class="body" style="display: flex; justify-content: center;"></div>`).appendTo(container);
+    secondRatingRow.css("gap", "18px");
+    secondRatingRow.css("flex-wrap", "wrap");
+    secondRatingRow.css("align-items", "start");
+    const injectTarget = settings.abAndAverageOnSeperateRow
+        ? secondRatingRow
+        : body;
+    if (settings.abAndAverageOnSeperateRow) {
+        body.after(secondRatingRow);
+    }
     // AnimeBytes rating
-    injectAnimeBytesRating(body);
+    injectAnimeBytesRating(injectTarget);
     // Average rating
     if (settings.showAverageRating) {
-        injectAverageRating(valid, body);
+        injectAverageRating(valid, injectTarget);
     }
 }
 
@@ -1489,7 +1528,32 @@ async function ensureTmdbItem() {
     return await tmdbPromise;
 }
 
+;// CONCATENATED MODULE: ./src/helpers/tierSort.ts
+function tierSort(sortees, tiers, manualScore) {
+    const out = [...sortees];
+    out.sort((a, b) => {
+        let s = 0;
+        for (const fn of tiers) {
+            if (s !== 0) {
+                break;
+            }
+            if (fn(a)) {
+                s -= 1;
+            }
+            if (fn(b)) {
+                s += 1;
+            }
+        }
+        if (manualScore) {
+            s += manualScore(a, b);
+        }
+        return s;
+    });
+    return out;
+}
+
 ;// CONCATENATED MODULE: ./src/providers/TmdbProvider.ts
+
 
 
 
@@ -1539,7 +1603,7 @@ class TmdbProvider extends MetadataProvider {
         }
         // Return cached result
         if (cached !== undefined) {
-            return cached;
+            // return cached as TmdbIdentified;
         }
         // No cached result, try to identify
         const url = new URL(`https://api.themoviedb.org/3/search/${type}`);
@@ -1565,7 +1629,11 @@ class TmdbProvider extends MetadataProvider {
             return false;
         }
         // try to find the first match with animation genre (16) first
-        const entry = res.results.find((e) => e.genre_ids.includes(16)) || res.results[0];
+        const entry = tierSort(res.results, [
+            (e) => e.genre_ids.includes(16),
+            (e) => e.original_language === "ja",
+            (e) => e.name.toLowerCase() === name.toLowerCase(),
+        ])[0];
         if (!entry || typeof entry.id !== "number") {
             throw new Error("invalid response from tmdb");
         }
@@ -1853,6 +1921,7 @@ function announcement(title) {
 
 
 
+
 function isDubbed(trailer) {
     return (dubbedInTitle(trailer.name) ||
         (trailer.info &&
@@ -1872,6 +1941,7 @@ const PREFERRED_CHANNELS = [
     "UCRuJMENPfFiMYoqCXleDLLQ",
     "UCWOA1ZGywLbqmigxE4Qlvuw", // Netflix
 ];
+// Tiers of preference
 const tiers = [
     // Prefer MAL
     (trailer) => preferMal && trailer.provider.name === "MAL",
@@ -1902,30 +1972,16 @@ const tiers = [
     (t) => commercial(t.name) || announcement(t.name),
 ];
 function sortTrailers(tr) {
-    const trailers = [...tr];
-    trailers.sort((a, b) => {
-        let s = 0;
-        for (const fn of tiers) {
-            if (s !== 0) {
-                break;
-            }
-            if (fn(a)) {
-                s -= 1;
-            }
-            if (fn(b)) {
-                s += 1;
-            }
-        }
+    return tierSort(tr, tiers, (a, b) => {
         // Default compare as last resort to order numbered trailers
         if (a.name < b.name) {
-            s -= 0.1;
+            return -0.1;
         }
         if (a.name > b.name) {
-            s += 0.1;
+            return 0.1;
         }
-        return s;
+        return 0;
     });
-    return trailers;
 }
 
 ;// CONCATENATED MODULE: ./src/dom/injectTrailersToPage.ts
