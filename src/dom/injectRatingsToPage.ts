@@ -1,4 +1,4 @@
-import { internetOrWebsiteDownErrorTitle } from "../constants";
+import { internetOrWebsiteOrLinkDownErrorTitle } from "../constants";
 import { settings } from "../delicious";
 import { logError } from "../helpers/log";
 import {
@@ -27,7 +27,7 @@ export async function injectRatingsToPage(providers: MetadataProvider[]) {
       } catch (err) {
         uiShowError(
           `Failed to fetch rating from ${provider.name}`,
-          internetOrWebsiteDownErrorTitle(provider.name),
+          internetOrWebsiteOrLinkDownErrorTitle(provider.name),
           err
         );
         throw err;

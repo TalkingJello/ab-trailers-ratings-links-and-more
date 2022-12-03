@@ -1,7 +1,7 @@
 import { TMDB_DEFAULT_API_KEY, TMDB_LANGUAGE, UNIQUE } from "../constants";
 import { ratingBox } from "../dom/ratingBox";
 import { checkCache, saveCache } from "../helpers/cache";
-import { ensureTmdbItem } from "../helpers/ensureTmdbIdentified";
+import { ensureTmdbItem } from "../helpers/ensureTmdbItem";
 import { displayVotes } from "../helpers/formatVotes";
 import { gmFetchJson } from "../helpers/gmFetchHelpers";
 import { log, logError } from "../helpers/log";
@@ -99,7 +99,7 @@ export class TmdbProvider extends MetadataProvider {
     }
     // Return cached result
     if (cached !== undefined) {
-      // return cached as TmdbIdentified;
+      return cached as TmdbIdentified;
     }
 
     // No cached result, try to identify

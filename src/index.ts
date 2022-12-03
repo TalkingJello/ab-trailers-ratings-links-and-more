@@ -1,4 +1,4 @@
-import { internetOrWebsiteDownErrorTitle } from "./constants";
+import { internetOrWebsiteOrLinkDownErrorTitle } from "./constants";
 import { insertDeliciousSettingsUi } from "./delicious";
 import { errorsSection, uiShowError } from "./dom/displayErrors";
 import { injectLinksToPage } from "./dom/injectLinksToPage";
@@ -59,7 +59,7 @@ async function main() {
         } catch (err) {
           uiShowError(
             `Failed to fetch trailers from ${p.name}`,
-            internetOrWebsiteDownErrorTitle(p.name),
+            internetOrWebsiteOrLinkDownErrorTitle(p.name),
             err
           );
           throw err;
