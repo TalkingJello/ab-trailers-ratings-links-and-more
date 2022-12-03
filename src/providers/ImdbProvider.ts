@@ -1,6 +1,6 @@
 import { ratingBoxFromScore } from "../dom/ratingBox";
 import { checkCache, deleteCache, saveCache } from "../helpers/cache";
-import { ensureTmdbItem } from "../helpers/ensureTmdbIdentified";
+import { ensureTmdbItem } from "../helpers/ensureTmdbItem";
 import { gmFetch } from "../helpers/gmFetchHelpers";
 import { log, logError } from "../helpers/log";
 import {

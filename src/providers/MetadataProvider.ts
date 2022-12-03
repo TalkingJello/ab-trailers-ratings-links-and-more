@@ -1,4 +1,5 @@
-import { UNIQUE } from "../constants";
+import { internetOrWebsiteOrLinkDownErrorTitle, UNIQUE } from "../constants";
+import { uiShowError } from "../dom/displayErrors";
 import { YoutubeItem } from "../helpers/fetchYoutubeVideoInfo";
 import { log } from "../helpers/log";
 
@@ -46,11 +47,22 @@ export abstract class MetadataProvider {
 
   protected abstract init(): Promise<boolean>;
   async ensureInitialized() {
-    if (this.initilizationPromise) {
-      return await this.initilizationPromise;
+    if (!this.initilizationPromise) {
+      this.initilizationPromise = (async () => {
+        try {
+          return await this.init();
+        } catch (err) {
+          log("error initializing", this.name, err);
+          uiShowError(
+            `Failed to initialize ${this.name}`,
+            internetOrWebsiteOrLinkDownErrorTitle(this.name),
+            err
+          );
+          return false;
+        }
+      })();
     }
 
-    this.initilizationPromise = this.init();
     return await this.initilizationPromise;
   }
 
