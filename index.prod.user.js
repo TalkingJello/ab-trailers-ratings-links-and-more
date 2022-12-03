@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          AB - Trailers, Ratings, Links (and more?)
 // @namespace     TalkingJello@animebytes.tv
-// @version       1.0.4
+// @version       1.0.5
 // @author        TalkingJello
 // @source        https://github.com/TalkingJello/ab-trailers-ratings-links-and-more
 // @description   Adds trailers, additional ratings, links (and more?) to AB anime pages
@@ -498,7 +498,7 @@ module.exports = {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"ab-trailers-ratings-links-and-more","description":"Adds trailers, additional ratings, links (and more?) to AB anime pages","version":"1.0.4","author":"TalkingJello","scripts":{"format":"prettier -w ./","build":"webpack --config config/webpack.config.prod.cjs","dev":"webpack --config config/webpack.config.dev.cjs","prepare":"husky install","lint-staged":"lint-staged"},"repository":{"type":"git","url":"https://github.com/TalkingJello/ab-trailers-ratings-links-and-more"},"private":true,"dependencies":{},"lint-staged":{"*.{js,jsx,ts,tsx,json}":["prettier --ignore-path ./.prettierignore --write "]},"devDependencies":{"@types/greasemonkey":"^4.0.4","@types/jquery":"^3.5.14","@types/node":"^18.11.8","browserslist":"^4.21.4","cross-env":"^7.0.3","css-loader":"^6.7.1","husky":"^8.0.1","less":"^4.1.3","less-loader":"^11.1.0","lint-staged":"^13.0.3","prettier":"^2.7.1","style-loader":"^3.3.1","ts-loader":"^9.4.1","typescript":"^4.8.4","userscript-metadata-webpack-plugin":"^0.2.12","webpack":"^5.74.0","webpack-bundle-analyzer":"^4.7.0","webpack-cli":"^4.10.0","webpack-livereload-plugin":"^3.0.2","webpack-merge":"^5.8.0","webpack-sources":"^3.2.3"}}');
+module.exports = JSON.parse('{"name":"ab-trailers-ratings-links-and-more","description":"Adds trailers, additional ratings, links (and more?) to AB anime pages","version":"1.0.5","author":"TalkingJello","scripts":{"format":"prettier -w ./","build":"webpack --config config/webpack.config.prod.cjs","dev":"webpack --config config/webpack.config.dev.cjs","prepare":"husky install","lint-staged":"lint-staged"},"repository":{"type":"git","url":"https://github.com/TalkingJello/ab-trailers-ratings-links-and-more"},"private":true,"dependencies":{},"lint-staged":{"*.{js,jsx,ts,tsx,json}":["prettier --ignore-path ./.prettierignore --write "]},"devDependencies":{"@types/greasemonkey":"^4.0.4","@types/jquery":"^3.5.14","@types/node":"^18.11.8","browserslist":"^4.21.4","cross-env":"^7.0.3","css-loader":"^6.7.1","husky":"^8.0.1","less":"^4.1.3","less-loader":"^11.1.0","lint-staged":"^13.0.3","prettier":"^2.7.1","style-loader":"^3.3.1","ts-loader":"^9.4.1","typescript":"^4.8.4","userscript-metadata-webpack-plugin":"^0.2.12","webpack":"^5.74.0","webpack-bundle-analyzer":"^4.7.0","webpack-cli":"^4.10.0","webpack-livereload-plugin":"^3.0.2","webpack-merge":"^5.8.0","webpack-sources":"^3.2.3"}}');
 
 /***/ })
 
@@ -584,7 +584,8 @@ const ANIDB_CLIENT_NAME = "abtexr";
 const ANIDB_CLIENT_VERSION = "1";
 const TMDB_DEFAULT_API_KEY = "fe87c50cd11a52087a6e806623385b73";
 const MAL_DEFAULT_API_KEY = "015cace9ce2a8dbd866dd7d9fa3ab561";
-const internetOrWebsiteDownErrorTitle = (websiteName) => `Make sure you're connected to the internet and that ${websiteName} is not down. Also make sure that the external ${websiteName} link is correct and leads to the anime's page.`;
+const internetOrWebsiteDownErrorTitle = (websiteName) => `Make sure you're connected to the internet and that ${websiteName} is not down.`;
+const internetOrWebsiteOrLinkDownErrorTitle = (websiteName) => `${internetOrWebsiteDownErrorTitle(websiteName)} Also make sure that the external ${websiteName} link is correct and leads to the anime's page.`;
 
 ;// CONCATENATED MODULE: ./src/helpers/log.ts
 
@@ -624,7 +625,74 @@ function clearCache() {
         .forEach((name) => GM_deleteValue(name));
 }
 
+;// CONCATENATED MODULE: ./src/dom/pageSection.ts
+function pageSection(name) {
+    const container = $(`<div class="box"><div class="head"><strong>${name}</strong></div><div class="body" style="display: flex; justify-content: center;"></div>`);
+    const errSpan = $('<span style="color:red; display: none;"></span>');
+    container.append(errSpan);
+    const setError = (m) => {
+        errSpan.show();
+        errSpan.text(m);
+    };
+    const resetError = () => {
+        errSpan.hide();
+        errSpan.text("");
+    };
+    return {
+        setError,
+        resetError,
+        container,
+        head: container.find(".head"),
+        body: container.find(".body"),
+    };
+}
+
+;// CONCATENATED MODULE: ./src/dom/displayErrors.ts
+
+
+const errorsSection = pageSection("Errors");
+const { container, body } = errorsSection;
+container.hide();
+body.css("display", "block");
+const notice = $(`<h4 style="
+    color: #cdb25c;
+    border-top: 1px solid gray;
+    padding-top: 4px;
+    margin-top: 4px;
+">
+Try refreshing the page.
+If the errors persist,
+and you believe it's an issue with the script,
+please report to ${AUTHOR}
+</h4>`).appendTo(body);
+let num = 1;
+function uiShowError(title, subtitle, err) {
+    const errorDiv = $(`<div></div>`).insertBefore(notice);
+    const titleElem = $(`<h4 style="color: indianred;">${num}. ${title} </h4>`).appendTo(errorDiv);
+    const toggle = $(`<span style="cursor: pointer;">[Expand]</span>`).appendTo(titleElem);
+    $(`<h4 style="color: #cd7c5c; margin-left: 17px;">${subtitle}</h4>`).appendTo(errorDiv);
+    const stack = $(`<pre style="margin-left: 17px;"></pre>`)
+        .hide()
+        .text(err.stack)
+        .appendTo(errorDiv);
+    toggle.click(() => {
+        if (toggle.text() === "[Expand]") {
+            toggle.text("[Collapse]");
+            stack.slideDown(200);
+        }
+        else {
+            toggle.text("[Expand]");
+            stack.slideUp(200);
+        }
+    });
+    num++;
+    container.show();
+}
+// @ts-expect-error
+unsafeWindow.uiShowError = uiShowError;
+
 ;// CONCATENATED MODULE: ./src/providers/MetadataProvider.ts
+
 
 
 var VideoSite;
@@ -645,10 +713,18 @@ class MetadataProvider {
     apiKeyName = "";
     defaultApiKey = "";
     async ensureInitialized() {
-        if (this.initilizationPromise) {
-            return await this.initilizationPromise;
+        if (!this.initilizationPromise) {
+            this.initilizationPromise = (async () => {
+                try {
+                    return await this.init();
+                }
+                catch (err) {
+                    log("error initializing", this.name, err);
+                    uiShowError(`Failed to initialize ${this.name}`, internetOrWebsiteOrLinkDownErrorTitle(this.name), err);
+                    return false;
+                }
+            })();
         }
-        this.initilizationPromise = this.init();
         return await this.initilizationPromise;
     }
     flags = new Set();
@@ -912,72 +988,6 @@ const settings = {
 };
 log("settings", settings);
 
-;// CONCATENATED MODULE: ./src/dom/pageSection.ts
-function pageSection(name) {
-    const container = $(`<div class="box"><div class="head"><strong>${name}</strong></div><div class="body" style="display: flex; justify-content: center;"></div>`);
-    const errSpan = $('<span style="color:red; display: none;"></span>');
-    container.append(errSpan);
-    const setError = (m) => {
-        errSpan.show();
-        errSpan.text(m);
-    };
-    const resetError = () => {
-        errSpan.hide();
-        errSpan.text("");
-    };
-    return {
-        setError,
-        resetError,
-        container,
-        head: container.find(".head"),
-        body: container.find(".body"),
-    };
-}
-
-;// CONCATENATED MODULE: ./src/dom/displayErrors.ts
-
-
-const errorsSection = pageSection("Errors");
-const { container, body } = errorsSection;
-container.hide();
-body.css("display", "block");
-const notice = $(`<h4 style="
-    color: #cdb25c;
-    border-top: 1px solid gray;
-    padding-top: 4px;
-    margin-top: 4px;
-">
-Try refreshing the page.
-If the errors persist,
-and you believe it's an issue with the script,
-please report to ${AUTHOR}
-</h4>`).appendTo(body);
-let num = 1;
-function uiShowError(title, subtitle, err) {
-    const errorDiv = $(`<div></div>`).insertBefore(notice);
-    const titleElem = $(`<h4 style="color: indianred;">${num}. ${title} </h4>`).appendTo(errorDiv);
-    const toggle = $(`<span style="cursor: pointer;">[Expand]</span>`).appendTo(titleElem);
-    $(`<h4 style="color: #cd7c5c; margin-left: 17px;">${subtitle}</h4>`).appendTo(errorDiv);
-    const stack = $(`<pre style="margin-left: 17px;"></pre>`)
-        .hide()
-        .text(err.stack)
-        .appendTo(errorDiv);
-    toggle.click(() => {
-        if (toggle.text() === "[Expand]") {
-            toggle.text("[Collapse]");
-            stack.slideDown(200);
-        }
-        else {
-            toggle.text("[Expand]");
-            stack.slideUp(200);
-        }
-    });
-    num++;
-    container.show();
-}
-// @ts-expect-error
-unsafeWindow.uiShowError = uiShowError;
-
 ;// CONCATENATED MODULE: ./src/dom/injectLinksToPage.ts
 
 
@@ -1002,7 +1012,7 @@ async function injectLinksToPage(providers) {
             return await p.getLink();
         }
         catch (err) {
-            uiShowError(`Failed to create external link to ${p.name}`, internetOrWebsiteDownErrorTitle(p.name), err);
+            uiShowError(`Failed to create external link to ${p.name}`, internetOrWebsiteOrLinkDownErrorTitle(p.name), err);
             throw err;
         }
     }));
@@ -1297,7 +1307,7 @@ async function injectRatingsToPage(providers) {
             };
         }
         catch (err) {
-            uiShowError(`Failed to fetch rating from ${provider.name}`, internetOrWebsiteDownErrorTitle(provider.name), err);
+            uiShowError(`Failed to fetch rating from ${provider.name}`, internetOrWebsiteOrLinkDownErrorTitle(provider.name), err);
             throw err;
         }
     }));
@@ -1505,7 +1515,9 @@ function ratingBoxFromScore({ rating, votes, breakdownLink, rank }, img, imgSize
     };
 }
 
-;// CONCATENATED MODULE: ./src/helpers/ensureTmdbIdentified.ts
+;// CONCATENATED MODULE: ./src/helpers/ensureTmdbItem.ts
+
+
 
 
 
@@ -1527,10 +1539,19 @@ async function tmdbItem() {
 }
 let tmdbPromise;
 async function ensureTmdbItem() {
-    if (tmdbPromise) {
+    if (!tmdbPromise) {
+        tmdbPromise = (async () => {
+            try {
+                return await tmdbItem();
+            }
+            catch (err) {
+                log("Error getting TMDB item", err);
+                uiShowError("Failed to identify and fetch TMDB entry (will prevent IMDb and tvdb from working as well)", internetOrWebsiteDownErrorTitle("TMDB"), err);
+                return false;
+            }
+        })();
         return await tmdbPromise;
     }
-    tmdbPromise = tmdbItem();
     return await tmdbPromise;
 }
 
@@ -1609,7 +1630,7 @@ class TmdbProvider extends MetadataProvider {
         }
         // Return cached result
         if (cached !== undefined) {
-            // return cached as TmdbIdentified;
+            return cached;
         }
         // No cached result, try to identify
         const url = new URL(`https://api.themoviedb.org/3/search/${type}`);
@@ -3006,7 +3027,7 @@ async function src_main() {
             return [p, await p.getTrailers()];
         }
         catch (err) {
-            uiShowError(`Failed to fetch trailers from ${p.name}`, internetOrWebsiteDownErrorTitle(p.name), err);
+            uiShowError(`Failed to fetch trailers from ${p.name}`, internetOrWebsiteOrLinkDownErrorTitle(p.name), err);
             throw err;
         }
     }));
