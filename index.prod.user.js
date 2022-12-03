@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          AB - Trailers, Ratings, Links (and more?)
 // @namespace     TalkingJello@animebytes.tv
-// @version       1.0.3
+// @version       1.0.4
 // @author        TalkingJello
 // @source        https://github.com/TalkingJello/ab-trailers-ratings-links-and-more
 // @description   Adds trailers, additional ratings, links (and more?) to AB anime pages
@@ -498,7 +498,7 @@ module.exports = {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"ab-trailers-ratings-links-and-more","description":"Adds trailers, additional ratings, links (and more?) to AB anime pages","version":"1.0.3","author":"TalkingJello","scripts":{"format":"prettier -w ./","build":"webpack --config config/webpack.config.prod.cjs","dev":"webpack --config config/webpack.config.dev.cjs","prepare":"husky install","lint-staged":"lint-staged"},"repository":{"type":"git","url":"https://github.com/TalkingJello/ab-trailers-ratings-links-and-more"},"private":true,"dependencies":{},"lint-staged":{"*.{js,jsx,ts,tsx,json}":["prettier --ignore-path ./.prettierignore --write "]},"devDependencies":{"@types/greasemonkey":"^4.0.4","@types/jquery":"^3.5.14","@types/node":"^18.11.8","browserslist":"^4.21.4","cross-env":"^7.0.3","css-loader":"^6.7.1","husky":"^8.0.1","less":"^4.1.3","less-loader":"^11.1.0","lint-staged":"^13.0.3","prettier":"^2.7.1","style-loader":"^3.3.1","ts-loader":"^9.4.1","typescript":"^4.8.4","userscript-metadata-webpack-plugin":"^0.2.12","webpack":"^5.74.0","webpack-bundle-analyzer":"^4.7.0","webpack-cli":"^4.10.0","webpack-livereload-plugin":"^3.0.2","webpack-merge":"^5.8.0","webpack-sources":"^3.2.3"}}');
+module.exports = JSON.parse('{"name":"ab-trailers-ratings-links-and-more","description":"Adds trailers, additional ratings, links (and more?) to AB anime pages","version":"1.0.4","author":"TalkingJello","scripts":{"format":"prettier -w ./","build":"webpack --config config/webpack.config.prod.cjs","dev":"webpack --config config/webpack.config.dev.cjs","prepare":"husky install","lint-staged":"lint-staged"},"repository":{"type":"git","url":"https://github.com/TalkingJello/ab-trailers-ratings-links-and-more"},"private":true,"dependencies":{},"lint-staged":{"*.{js,jsx,ts,tsx,json}":["prettier --ignore-path ./.prettierignore --write "]},"devDependencies":{"@types/greasemonkey":"^4.0.4","@types/jquery":"^3.5.14","@types/node":"^18.11.8","browserslist":"^4.21.4","cross-env":"^7.0.3","css-loader":"^6.7.1","husky":"^8.0.1","less":"^4.1.3","less-loader":"^11.1.0","lint-staged":"^13.0.3","prettier":"^2.7.1","style-loader":"^3.3.1","ts-loader":"^9.4.1","typescript":"^4.8.4","userscript-metadata-webpack-plugin":"^0.2.12","webpack":"^5.74.0","webpack-bundle-analyzer":"^4.7.0","webpack-cli":"^4.10.0","webpack-livereload-plugin":"^3.0.2","webpack-merge":"^5.8.0","webpack-sources":"^3.2.3"}}');
 
 /***/ })
 
@@ -584,7 +584,7 @@ const ANIDB_CLIENT_NAME = "abtexr";
 const ANIDB_CLIENT_VERSION = "1";
 const TMDB_DEFAULT_API_KEY = "fe87c50cd11a52087a6e806623385b73";
 const MAL_DEFAULT_API_KEY = "015cace9ce2a8dbd866dd7d9fa3ab561";
-const internetOrWebsiteDownErrorTitle = (websiteName) => `Make sure you're connected to the internet and that ${websiteName} is not down.`;
+const internetOrWebsiteDownErrorTitle = (websiteName) => `Make sure you're connected to the internet and that ${websiteName} is not down. Also make sure that the external ${websiteName} link is correct and leads to the anime's page.`;
 
 ;// CONCATENATED MODULE: ./src/helpers/log.ts
 
@@ -1041,10 +1041,12 @@ function abScoreFromPage() {
         deleteHref.startsWith("javascript:deleteVote")) {
         myRating = parseInt(match[1]);
     }
+    const parsedRating = parseFloat($("#avg_rating").text());
+    const parsedVotes = parseInt($("#num_rating").text());
     return [
         {
-            rating: parseFloat($("#avg_rating").text()),
-            votes: parseInt($("#num_rating").text()),
+            rating: isNaN(parsedRating) ? 0 : parsedRating,
+            votes: isNaN(parsedVotes) ? 0 : parsedVotes,
         },
         myRating,
         deleteHref,
@@ -1160,8 +1162,10 @@ function injectAnimeBytesRating(parent) {
     parent.append(container);
     setTimeout(() => subscribeToAbScoreChange((score, myScore, deleteHref) => {
         log("Updating AnimeBytes rating", score, myScore, deleteHref);
-        rating.text(`${score.rating} / 10`);
-        votes.html(`${displayVotes(score.votes)} votes`);
+        rating.text(`${score.rating === 0 ? "-" : score.rating} / 10`);
+        votes.html(score.votes === 0
+            ? "No votes yet.<br/>Rate this!"
+            : `${displayVotes(score.votes)} votes`);
         if (myScore !== 0) {
             myRatingDiv.slideDown(500);
             myRating.text(`My Rating: ${myScore} / 10`);
@@ -1263,10 +1267,12 @@ function injectAverageRating(scores, parent) {
         const averageRating = scores.reduce((acc, { provider, rating }) => {
             return acc + provider.getScoreWeightForAverage() * rating;
         }, abScore.rating * settings.abScoreAverageWeight) /
-            scores.reduce((acc, { provider }) => acc + provider.getScoreWeightForAverage(), settings.abScoreAverageWeight);
+            scores
+                .filter((score) => score.votes > 0)
+                .reduce((acc, { provider }) => acc + provider.getScoreWeightForAverage(), abScore.votes > 0 ? settings.abScoreAverageWeight : 0);
         const totalVotes = scores.reduce((acc, { votes }) => acc + votes, abScore.votes);
         rating.text(`Average: ${averageRating.toFixed(2)} / 10`);
-        votes.html(`${displayVotes(totalVotes)} total votes<br>from <i>${scores.length + 1}</i> sources`);
+        votes.html(`${displayVotes(totalVotes)} total votes<br>from <i>${scores.length + (abScore.votes > 0 ? 1 : 0)}</i> sources`);
     }), 1);
 }
 
@@ -2365,12 +2371,19 @@ class MalJikanProvider extends MetadataProvider {
         }
         const key = `mal_jikan_score_${this.malId}`;
         const cached = checkCache(key, 1000 * 60 * 60 * 24 * 2); // 2 days
-        if (cached !== undefined && typeof cached.votes === "number") {
+        if (cached === false) {
+            return false;
+        }
+        if (cached && typeof cached.votes === "number") {
             return cached;
         }
         await throttle("jikan", 800);
         const data = await this.fetchJikans(`https://api.jikan.moe/v4/anime/${this.malId}`);
         setThrottleUse("jikan");
+        if (typeof data.score !== "number" || typeof data.scored_by !== "number") {
+            saveCache(key, false);
+            return false;
+        }
         const score = {
             votes: data.scored_by,
             rating: data.score,
