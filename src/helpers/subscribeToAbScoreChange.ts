@@ -17,10 +17,12 @@ function abScoreFromPage(): [Score, number, string] {
     myRating = parseInt(match[1]);
   }
 
+  const parsedRating = parseFloat($("#avg_rating").text());
+  const parsedVotes = parseInt($("#num_rating").text());
   return [
     {
-      rating: parseFloat($("#avg_rating").text()),
-      votes: parseInt($("#num_rating").text()),
+      rating: isNaN(parsedRating) ? 0 : parsedRating,
+      votes: isNaN(parsedVotes) ? 0 : parsedVotes,
     },
     myRating,
     deleteHref,
