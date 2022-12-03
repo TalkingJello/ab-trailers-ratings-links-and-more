@@ -1,4 +1,4 @@
-import { ensureTmdbItem } from "../helpers/ensureTmdbIdentified";
+import { ensureTmdbItem } from "../helpers/ensureTmdbItem";
 import { MetadataProvider, OutLink, ProviderFlags } from "./MetadataProvider";
 
 // @TODO: rating? trailers?

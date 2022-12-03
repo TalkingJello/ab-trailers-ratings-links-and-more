@@ -1,3 +1,5 @@
+import { internetOrWebsiteDownErrorTitle } from "../constants";
+import { uiShowError } from "../dom/displayErrors";
 import { tmdbQueryFromPage } from "../dom/tmdbQueryFromPage";
 import { TmdbItem, TmdbProvider } from "../providers/TmdbProvider";
 import { log } from "./log";
@@ -23,10 +25,22 @@ async function tmdbItem(): Promise<TmdbItem | false> {
 
 let tmdbPromise: Promise<TmdbItem | false>;
 export async function ensureTmdbItem() {
-  if (tmdbPromise) {
+  if (!tmdbPromise) {
+    tmdbPromise = (async () => {
+      try {
+        return await tmdbItem();
+      } catch (err) {
+        log("Error getting TMDB item", err);
+        uiShowError(
+          "Failed to identify and fetch TMDB entry (will prevent IMDb and tvdb from working as well)",
+          internetOrWebsiteDownErrorTitle("TMDB"),
+          err
+        );
+        return false;
+      }
+    })();
     return await tmdbPromise;
   }
 
-  tmdbPromise = tmdbItem();
   return await tmdbPromise;
 }

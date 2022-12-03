@@ -1,4 +1,4 @@
-import { internetOrWebsiteDownErrorTitle } from "../constants";
+import { internetOrWebsiteOrLinkDownErrorTitle } from "../constants";
 import { settings } from "../delicious";
 import { logError } from "../helpers/log";
 import { MetadataProvider } from "../providers/MetadataProvider";
@@ -29,7 +29,7 @@ export async function injectLinksToPage(providers: MetadataProvider[]) {
       } catch (err) {
         uiShowError(
           `Failed to create external link to ${p.name}`,
-          internetOrWebsiteDownErrorTitle(p.name),
+          internetOrWebsiteOrLinkDownErrorTitle(p.name),
           err
         );
         throw err;
