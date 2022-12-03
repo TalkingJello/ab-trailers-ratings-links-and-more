@@ -57,7 +57,10 @@ export class MalJikanProvider extends MetadataProvider {
 
     const key = `mal_jikan_score_${this.malId}`;
     const cached = checkCache(key, 1000 * 60 * 60 * 24 * 2); // 2 days
-    if (cached !== undefined && typeof cached.votes === "number") {
+    if (cached === false) {
+      return false;
+    }
+    if (cached && typeof cached.votes === "number") {
       return cached as Score;
     }
 
@@ -66,6 +69,11 @@ export class MalJikanProvider extends MetadataProvider {
       `https://api.jikan.moe/v4/anime/${this.malId}`
     );
     setThrottleUse("jikan");
+
+    if (typeof data.score !== "number" || typeof data.scored_by !== "number") {
+      saveCache(key, false);
+      return false;
+    }
 
     const score: Score = {
       votes: data.scored_by,
