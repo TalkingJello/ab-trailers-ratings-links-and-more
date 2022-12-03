@@ -70,10 +70,12 @@ export function injectAverageRating(
           scores.reduce((acc, { provider, rating }) => {
             return acc + provider.getScoreWeightForAverage() * rating;
           }, abScore.rating * settings.abScoreAverageWeight) /
-          scores.reduce(
-            (acc, { provider }) => acc + provider.getScoreWeightForAverage(),
-            settings.abScoreAverageWeight
-          );
+          scores
+            .filter((score) => score.votes > 0)
+            .reduce(
+              (acc, { provider }) => acc + provider.getScoreWeightForAverage(),
+              abScore.votes > 0 ? settings.abScoreAverageWeight : 0
+            );
         const totalVotes = scores.reduce(
           (acc, { votes }) => acc + votes,
           abScore.votes
@@ -82,7 +84,7 @@ export function injectAverageRating(
         rating.text(`Average: ${averageRating.toFixed(2)} / 10`);
         votes.html(
           `${displayVotes(totalVotes)} total votes<br>from <i>${
-            scores.length + 1
+            scores.length + (abScore.votes > 0 ? 1 : 0)
           }</i> sources`
         );
       }),

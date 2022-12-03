@@ -80,8 +80,12 @@ export function injectAnimeBytesRating(parent: JQuery<HTMLElement>) {
     () =>
       subscribeToAbScoreChange((score, myScore, deleteHref) => {
         log("Updating AnimeBytes rating", score, myScore, deleteHref);
-        rating.text(`${score.rating} / 10`);
-        votes.html(`${displayVotes(score.votes)} votes`);
+        rating.text(`${score.rating === 0 ? "-" : score.rating} / 10`);
+        votes.html(
+          score.votes === 0
+            ? "No votes yet.<br/>Rate this!"
+            : `${displayVotes(score.votes)} votes`
+        );
 
         if (myScore !== 0) {
           myRatingDiv.slideDown(500);
