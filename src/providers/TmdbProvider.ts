@@ -138,7 +138,10 @@ export class TmdbProvider extends MetadataProvider {
     const entry = tierSort(res.results as any[], [
       (e) => e.genre_ids.includes(16),
       (e) => e.original_language === "ja",
-      (e) => (e.name as string).toLowerCase() === name.toLowerCase(),
+      (e) =>
+        (
+          (type === TmdbMediaType.Tv ? e.name : e.title) as string
+        ).toLowerCase() === name.toLowerCase(),
     ])[0];
     if (!entry || typeof entry.id !== "number") {
       throw new Error("invalid response from tmdb");
