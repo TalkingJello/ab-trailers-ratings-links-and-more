@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          AB - Trailers, Ratings, Links (and more?)
 // @namespace     TalkingJello@animebytes.tv
-// @version       1.0.5
+// @version       1.0.6
 // @author        TalkingJello
 // @source        https://github.com/TalkingJello/ab-trailers-ratings-links-and-more
 // @description   Adds trailers, additional ratings, links (and more?) to AB anime pages
@@ -498,7 +498,7 @@ module.exports = {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"ab-trailers-ratings-links-and-more","description":"Adds trailers, additional ratings, links (and more?) to AB anime pages","version":"1.0.5","author":"TalkingJello","scripts":{"format":"prettier -w ./","build":"webpack --config config/webpack.config.prod.cjs","dev":"webpack --config config/webpack.config.dev.cjs","prepare":"husky install","lint-staged":"lint-staged"},"repository":{"type":"git","url":"https://github.com/TalkingJello/ab-trailers-ratings-links-and-more"},"private":true,"dependencies":{},"lint-staged":{"*.{js,jsx,ts,tsx,json}":["prettier --ignore-path ./.prettierignore --write "]},"devDependencies":{"@types/greasemonkey":"^4.0.4","@types/jquery":"^3.5.14","@types/node":"^18.11.8","browserslist":"^4.21.4","cross-env":"^7.0.3","css-loader":"^6.7.1","husky":"^8.0.1","less":"^4.1.3","less-loader":"^11.1.0","lint-staged":"^13.0.3","prettier":"^2.7.1","style-loader":"^3.3.1","ts-loader":"^9.4.1","typescript":"^4.8.4","userscript-metadata-webpack-plugin":"^0.2.12","webpack":"^5.74.0","webpack-bundle-analyzer":"^4.7.0","webpack-cli":"^4.10.0","webpack-livereload-plugin":"^3.0.2","webpack-merge":"^5.8.0","webpack-sources":"^3.2.3"}}');
+module.exports = JSON.parse('{"name":"ab-trailers-ratings-links-and-more","description":"Adds trailers, additional ratings, links (and more?) to AB anime pages","version":"1.0.6","author":"TalkingJello","scripts":{"format":"prettier -w ./","build":"webpack --config config/webpack.config.prod.cjs","dev":"webpack --config config/webpack.config.dev.cjs","prepare":"husky install","lint-staged":"lint-staged"},"repository":{"type":"git","url":"https://github.com/TalkingJello/ab-trailers-ratings-links-and-more"},"private":true,"dependencies":{},"lint-staged":{"*.{js,jsx,ts,tsx,json}":["prettier --ignore-path ./.prettierignore --write "]},"devDependencies":{"@types/greasemonkey":"^4.0.4","@types/jquery":"^3.5.14","@types/node":"^18.11.8","browserslist":"^4.21.4","cross-env":"^7.0.3","css-loader":"^6.7.1","husky":"^8.0.1","less":"^4.1.3","less-loader":"^11.1.0","lint-staged":"^13.0.3","prettier":"^2.7.1","style-loader":"^3.3.1","ts-loader":"^9.4.1","typescript":"^4.8.4","userscript-metadata-webpack-plugin":"^0.2.12","webpack":"^5.74.0","webpack-bundle-analyzer":"^4.7.0","webpack-cli":"^4.10.0","webpack-livereload-plugin":"^3.0.2","webpack-merge":"^5.8.0","webpack-sources":"^3.2.3"}}');
 
 /***/ })
 
@@ -1659,7 +1659,7 @@ class TmdbProvider extends MetadataProvider {
         const entry = tierSort(res.results, [
             (e) => e.genre_ids.includes(16),
             (e) => e.original_language === "ja",
-            (e) => e.name.toLowerCase() === name.toLowerCase(),
+            (e) => (type === TmdbMediaType.Tv ? e.name : e.title).toLowerCase() === name.toLowerCase(),
         ])[0];
         if (!entry || typeof entry.id !== "number") {
             throw new Error("invalid response from tmdb");
@@ -1677,7 +1677,7 @@ class TmdbProvider extends MetadataProvider {
     // add some sort of match fixing for tmdb
     static async fetchItem(identified) {
         const { mediaType, id } = identified;
-        const key = `tmdb_item_${mediaType}_${id}`;
+        const key = `tmdb_item_v2_${mediaType}_${id}`;
         const cached = checkCache(key, 1000 * 60 * 60 * 24 * 3); // 3 days
         if (cached !== undefined) {
             return cached;
@@ -1705,6 +1705,7 @@ class TmdbProvider extends MetadataProvider {
             votes: res.vote_count,
             externalIds: res.external_ids,
             videos: res.videos.results,
+            name: mediaType === TmdbMediaType.Tv ? res.name : res.title,
         };
         saveCache(key, out);
         return out;
@@ -1949,6 +1950,8 @@ function announcement(title) {
 
 
 
+
+
 function isDubbed(trailer) {
     return (dubbedInTitle(trailer.name) ||
         (trailer.info &&
@@ -1956,50 +1959,54 @@ function isDubbed(trailer) {
             // it means it probably has english audio
             !!trailer.info.captions.find((c) => c.languageCode === "en" && c.kind === "asr")));
 }
-// if it's a season or part, we should prefer trailers from MAL
-// since they will be specific to the season/part
-// unlike tmdb which will have trailers for the whole series
-const res = tmdbQueryFromPage(false);
-const preferMal = res
-    ? SEASON_PART_REGEX.test(res.name) || res.name.includes(":")
-    : false;
 const PREFERRED_CHANNELS = [
     "UC6pGDc4bFGD1_36IKv3FnYg",
     "UCRuJMENPfFiMYoqCXleDLLQ",
     "UCWOA1ZGywLbqmigxE4Qlvuw", // Netflix
 ];
-// Tiers of preference
-const tiers = [
-    // Prefer MAL
-    (trailer) => preferMal && trailer.provider.name === "MAL",
-    // Dubs
-    (t) => {
-        if (settings.preferredTrailerAudioLanguage === "any") {
-            return false;
-        }
-        const preferDubbed = settings.preferredTrailerAudioLanguage === "dubbed";
-        return preferDubbed ? isDubbed(t) : !isDubbed(t);
-    },
-    // Preferred channels that are (I think) always subbed
-    (t) => t.info && PREFERRED_CHANNELS.includes(t.info.channelId),
-    // Try to prefer subs over raw
-    (t) => subbedInTitle(t.name) ||
-        (t.info &&
-            !!t.info.captions.find((c) => c.languageCode === "en" && c.kind !== "asr")),
-    // "Regular" trailers
-    (t) => !teaser(t.name) &&
-        !commercial(t.name) &&
-        !promotionalVideo(t.name) &&
-        !announcement(t.name),
-    // Promotional Videos
-    (t) => promotionalVideo(t.name),
-    // Teasers
-    (t) => teaser(t.name),
-    // Commercials and announcements
-    (t) => commercial(t.name) || announcement(t.name),
-];
-function sortTrailers(tr) {
-    return tierSort(tr, tiers, (a, b) => {
+async function sortTrailers(tr) {
+    const tmdbItem = await ensureTmdbItem();
+    const fromPage = tmdbQueryFromPage(false);
+    // if it's a season or part, we should prefer trailers from MAL
+    // since they will be specific to the season/part
+    // unlike tmdb which will have trailers for the whole series
+    const isNamedSeason = fromPage &&
+        fromPage.name.includes(":") &&
+        (!tmdbItem || !tmdbItem.name.includes(":"));
+    const preferMal = fromPage &&
+        fromPage.type === TmdbMediaType.Tv &&
+        (SEASON_PART_REGEX.test(fromPage.name) || isNamedSeason);
+    return tierSort(tr, 
+    // Tiers of preference
+    [
+        // Prefer MAL
+        (trailer) => preferMal && trailer.provider.name === "MAL",
+        // Dubs
+        (t) => {
+            if (settings.preferredTrailerAudioLanguage === "any") {
+                return false;
+            }
+            const preferDubbed = settings.preferredTrailerAudioLanguage === "dubbed";
+            return preferDubbed ? isDubbed(t) : !isDubbed(t);
+        },
+        // Preferred channels that are (I think) always subbed
+        (t) => t.info && PREFERRED_CHANNELS.includes(t.info.channelId),
+        // Try to prefer subs over raw
+        (t) => subbedInTitle(t.name) ||
+            (t.info &&
+                !!t.info.captions.find((c) => c.languageCode === "en" && c.kind !== "asr")),
+        // "Regular" trailers
+        (t) => !teaser(t.name) &&
+            !commercial(t.name) &&
+            !promotionalVideo(t.name) &&
+            !announcement(t.name),
+        // Promotional Videos
+        (t) => promotionalVideo(t.name),
+        // Teasers
+        (t) => teaser(t.name),
+        // Commercials and announcements
+        (t) => commercial(t.name) || announcement(t.name),
+    ], (a, b) => {
         // Default compare as last resort to order numbered trailers
         if (a.name < b.name) {
             return -0.1;
@@ -2070,7 +2077,7 @@ so it might not be playable.`, err);
         }
         trailers.push(trailer);
     });
-    trailers = sortTrailers(trailers);
+    trailers = await sortTrailers(trailers);
     // General layout
     const synopsis = $('.box > .head > strong:contains("Plot Synopsis")')
         .parent()
