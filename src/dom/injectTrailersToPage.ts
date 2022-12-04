@@ -78,7 +78,7 @@ so it might not be playable.`,
     trailers.push(trailer);
   });
 
-  trailers = sortTrailers(trailers);
+  trailers = await sortTrailers(trailers);
 
   // General layout
   const synopsis = $('.box > .head > strong:contains("Plot Synopsis")')

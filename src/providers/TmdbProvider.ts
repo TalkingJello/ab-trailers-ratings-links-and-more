@@ -52,6 +52,7 @@ export interface TmdbItem extends TmdbIdentified {
   votes: number;
   externalIds: TmdbExternalIds;
   videos: TmdbVideo[];
+  name: string;
 }
 
 export class TmdbProvider extends MetadataProvider {
@@ -161,7 +162,7 @@ export class TmdbProvider extends MetadataProvider {
   // add some sort of match fixing for tmdb
   static async fetchItem(identified: TmdbIdentified): Promise<TmdbItem> {
     const { mediaType, id } = identified;
-    const key = `tmdb_item_${mediaType}_${id}`;
+    const key = `tmdb_item_v2_${mediaType}_${id}`;
     const cached = checkCache(key, 1000 * 60 * 60 * 24 * 3); // 3 days
     if (cached !== undefined) {
       return cached as TmdbItem;
@@ -198,6 +199,7 @@ export class TmdbProvider extends MetadataProvider {
       votes: res.vote_count,
       externalIds: res.external_ids,
       videos: res.videos.results,
+      name: mediaType === TmdbMediaType.Tv ? res.name : res.title,
     };
     saveCache(key, out);
     return out;
