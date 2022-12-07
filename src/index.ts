@@ -5,7 +5,7 @@ import { injectLinksToPage } from "./dom/injectLinksToPage";
 import { injectRatingsToPage } from "./dom/injectRatingsToPage";
 import { injectTrailersToPage } from "./dom/injectTrailersToPage";
 import { placeSynopsis } from "./dom/placeSynopsis";
-import { logError } from "./helpers/log";
+import { log, logError } from "./helpers/log";
 import { AniDbProvider } from "./providers/AniDbProvider";
 import { ImdbProvider } from "./providers/ImdbProvider";
 import { MalJikanProvider } from "./providers/MalJikanProvider";
@@ -35,6 +35,14 @@ async function main() {
     new AniDbProvider(),
   ];
   insertDeliciousSettingsUi(providers);
+
+  if (
+    window.location.pathname !== "/torrents.php" ||
+    !new URLSearchParams(window.location.search).get("id")
+  ) {
+    log("Not on a torrent page, not doing anything", window.location);
+    return;
+  }
 
   // Inject to dom
   const synopsis = $('.box > .head > strong:contains("Plot Synopsis")')
@@ -85,5 +93,5 @@ async function main() {
 }
 
 main().catch((e) => {
-  console.log(e);
+  logError(e);
 });
