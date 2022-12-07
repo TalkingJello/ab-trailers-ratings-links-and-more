@@ -11,7 +11,7 @@ module.exports = {
   license: "MIT",
   source: repository.url,
   match: [
-    "*://animebytes.tv/torrents.php?id=*",
+    "*://animebytes.tv/torrents.php?*",
     "*://animebytes.tv/user.php?action=edit*",
   ],
   require: [
