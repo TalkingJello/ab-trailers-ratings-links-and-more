@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          AB - Trailers, Ratings, Links (and more?)
 // @namespace     TalkingJello@animebytes.tv
-// @version       1.0.7
+// @version       1.0.8
 // @author        TalkingJello
 // @source        https://github.com/TalkingJello/ab-trailers-ratings-links-and-more
 // @description   Adds trailers, additional ratings, links (and more?) to AB anime pages
@@ -498,7 +498,7 @@ module.exports = {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"ab-trailers-ratings-links-and-more","description":"Adds trailers, additional ratings, links (and more?) to AB anime pages","version":"1.0.7","author":"TalkingJello","scripts":{"format":"prettier -w ./","build":"webpack --config config/webpack.config.prod.cjs","dev":"webpack --config config/webpack.config.dev.cjs","prepare":"husky install","lint-staged":"lint-staged"},"repository":{"type":"git","url":"https://github.com/TalkingJello/ab-trailers-ratings-links-and-more"},"private":true,"dependencies":{},"lint-staged":{"*.{js,jsx,ts,tsx,json}":["prettier --ignore-path ./.prettierignore --write "]},"devDependencies":{"@types/greasemonkey":"^4.0.4","@types/jquery":"^3.5.14","@types/node":"^18.11.8","browserslist":"^4.21.4","cross-env":"^7.0.3","css-loader":"^6.7.1","husky":"^8.0.1","less":"^4.1.3","less-loader":"^11.1.0","lint-staged":"^13.0.3","prettier":"^2.7.1","style-loader":"^3.3.1","ts-loader":"^9.4.1","typescript":"^4.8.4","userscript-metadata-webpack-plugin":"^0.2.12","webpack":"^5.74.0","webpack-bundle-analyzer":"^4.7.0","webpack-cli":"^4.10.0","webpack-livereload-plugin":"^3.0.2","webpack-merge":"^5.8.0","webpack-sources":"^3.2.3"}}');
+module.exports = JSON.parse('{"name":"ab-trailers-ratings-links-and-more","description":"Adds trailers, additional ratings, links (and more?) to AB anime pages","version":"1.0.8","author":"TalkingJello","scripts":{"format":"prettier -w ./","build":"webpack --config config/webpack.config.prod.cjs","dev":"webpack --config config/webpack.config.dev.cjs","prepare":"husky install","lint-staged":"lint-staged"},"repository":{"type":"git","url":"https://github.com/TalkingJello/ab-trailers-ratings-links-and-more"},"private":true,"dependencies":{},"lint-staged":{"*.{js,jsx,ts,tsx,json}":["prettier --ignore-path ./.prettierignore --write "]},"devDependencies":{"@types/greasemonkey":"^4.0.4","@types/jquery":"^3.5.14","@types/node":"^18.11.8","browserslist":"^4.21.4","cross-env":"^7.0.3","css-loader":"^6.7.1","husky":"^8.0.1","less":"^4.1.3","less-loader":"^11.1.0","lint-staged":"^13.0.3","prettier":"^2.7.1","style-loader":"^3.3.1","ts-loader":"^9.4.1","typescript":"^4.8.4","userscript-metadata-webpack-plugin":"^0.2.12","webpack":"^5.74.0","webpack-bundle-analyzer":"^4.7.0","webpack-cli":"^4.10.0","webpack-livereload-plugin":"^3.0.2","webpack-merge":"^5.8.0","webpack-sources":"^3.2.3"}}');
 
 /***/ })
 
@@ -1148,7 +1148,7 @@ function injectAnimeBytesRating(parent) {
   `);
     // Image
     const scale = container.find(`.${UNIQUE}-scale-on-hover`);
-    scale.append(`<img src="https://mei.animebytes.tv/Ok3xQjqTaoN.png" style="width: 66px; height: 66px;" />`);
+    scale.append(`<img src="https://mei.kuudere.pw/Ok3xQjqTaoN.png" style="width: 66px; height: 66px;" />`);
     // Rating
     const ratingContainer = container.find(`.${UNIQUE}-rating-text-div`);
     const rating = $(`<span></span>`).appendTo(ratingContainer);
@@ -1264,7 +1264,7 @@ function injectAverageRating(scores, parent) {
   `);
     // Image
     const scale = container.find(`.${UNIQUE}-scale-on-hover`);
-    scale.append(`<img src="https://mei.animebytes.tv/AVN3Hftsygk.png" style="width: 62px; height: 62px; filter: grayscale(0.5);" />`);
+    scale.append(`<img src="https://mei.kuudere.pw/AVN3Hftsygk.png" style="width: 62px; height: 62px; filter: grayscale(0.5);" />`);
     // Rating
     const ratingContainer = container.find(`.${UNIQUE}-rating-text-div`);
     const rating = $(`<span></span>`).appendTo(ratingContainer);
@@ -2253,7 +2253,7 @@ class AniDbProvider extends MetadataProvider {
         }
     }
     insertScore(parent, score) {
-        const { container } = ratingBoxFromScore(score, "https://mei.animebytes.tv/qN7pRFMzaEs.png", 68);
+        const { container } = ratingBoxFromScore(score, "https://mei.kuudere.pw/qN7pRFMzaEs.png", 68);
         parent.append(container);
     }
 }
@@ -2351,7 +2351,7 @@ class ImdbProvider extends MetadataProvider {
         };
     }
     insertScore(parent, score) {
-        const { container } = ratingBoxFromScore(score, "https://mei.animebytes.tv/gtY9cKsJV77.png", 52);
+        const { container } = ratingBoxFromScore(score, "https://mei.kuudere.pw/gtY9cKsJV77.png", 52);
         parent.append(container);
     }
 }
@@ -2453,7 +2453,7 @@ class MalJikanProvider extends MetadataProvider {
         return trailers;
     }
     insertScore(parent, score) {
-        const { container, image } = ratingBoxFromScore(score, "https://mei.animebytes.tv/ssTMPRvxBSo.png", 54);
+        const { container, image } = ratingBoxFromScore(score, "https://mei.kuudere.pw/ssTMPRvxBSo.png", 54);
         image.css("border-radius", "12px");
         parent.append(container);
     }
