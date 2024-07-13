@@ -48,7 +48,7 @@ export function injectAverageRating(
   // Image
   const scale = container.find(`.${UNIQUE}-scale-on-hover`);
   scale.append(
-    `<img src="https://mei.animebytes.tv/AVN3Hftsygk.png" style="width: 62px; height: 62px; filter: grayscale(0.5);" />`
+    `<img src="https://mei.kuudere.pw/AVN3Hftsygk.png" style="width: 62px; height: 62px; filter: grayscale(0.5);" />`
   );
 
   // Rating

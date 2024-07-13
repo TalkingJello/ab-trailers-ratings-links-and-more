@@ -44,7 +44,7 @@ export function injectAnimeBytesRating(parent: JQuery<HTMLElement>) {
   // Image
   const scale = container.find(`.${UNIQUE}-scale-on-hover`);
   scale.append(
-    `<img src="https://mei.animebytes.tv/Ok3xQjqTaoN.png" style="width: 66px; height: 66px;" />`
+    `<img src="https://mei.kuudere.pw/Ok3xQjqTaoN.png" style="width: 66px; height: 66px;" />`
   );
 
   // Rating

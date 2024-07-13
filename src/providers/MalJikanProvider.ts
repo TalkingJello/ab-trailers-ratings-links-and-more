@@ -128,7 +128,7 @@ export class MalJikanProvider extends MetadataProvider {
   insertScore(parent: JQuery<HTMLElement>, score: Score): void {
     const { container, image } = ratingBoxFromScore(
       score,
-      "https://mei.animebytes.tv/ssTMPRvxBSo.png",
+      "https://mei.kuudere.pw/ssTMPRvxBSo.png",
       54
     );
     image.css("border-radius", "12px");

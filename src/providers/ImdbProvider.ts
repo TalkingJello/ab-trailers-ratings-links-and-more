@@ -121,7 +121,7 @@ export class ImdbProvider extends MetadataProvider {
   insertScore(parent: JQuery<HTMLElement>, score: Score): void {
     const { container } = ratingBoxFromScore(
       score,
-      "https://mei.animebytes.tv/gtY9cKsJV77.png",
+      "https://mei.kuudere.pw/gtY9cKsJV77.png",
       52
     );
 

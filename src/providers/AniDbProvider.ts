@@ -74,7 +74,7 @@ export class AniDbProvider extends MetadataProvider {
   insertScore(parent: JQuery<HTMLElement>, score: Score): void {
     const { container } = ratingBoxFromScore(
       score,
-      "https://mei.animebytes.tv/qN7pRFMzaEs.png",
+      "https://mei.kuudere.pw/qN7pRFMzaEs.png",
       68
     );
 
