@@ -112,11 +112,7 @@ export class TmdbProvider extends MetadataProvider {
     url.searchParams.set("query", name);
     // Add year to the query if available
     if (year) {
-        if (type === TmdbMediaType.Movie) {
             url.searchParams.set("year", year);
-        } else if (type === TmdbMediaType.Tv) {
-            url.searchParams.set("first_air_date_year", year);
-        }
     }
     log(`fetching ${url.toString()}`);
     url.searchParams.set(
