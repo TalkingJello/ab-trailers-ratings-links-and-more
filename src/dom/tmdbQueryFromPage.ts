@@ -17,7 +17,7 @@ export function tmdbQueryFromPage(process = true) {
   const s = $("#content > div.thin > h2:first-child").text().split(" - ");
   const post = s.pop();
   const type =
-    post.startsWith("TV Series") || post.startsWith("ONA")
+    post.startsWith("TV Series") || post.startsWith("ONA") || post.startsWith("OVA")
       ? TmdbMediaType.Tv
       : post.startsWith("Movie")
       ? TmdbMediaType.Movie
