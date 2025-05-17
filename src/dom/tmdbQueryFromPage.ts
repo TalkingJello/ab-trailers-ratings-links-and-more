@@ -22,13 +22,14 @@ export function tmdbQueryFromPage(process = true) {
       : post.startsWith("Movie")
       ? TmdbMediaType.Movie
       : false;
-  const yearMatch = name.match(/\((\d{4})\)/);
-  const year = yearMatch ? yearMatch[1] : null;
+
   if (!type) {
     return false;
   }
 
   const name = s.join(" - ");
+  const yearMatch = post.match(/\[(\d{4})\]/);
+  const year = yearMatch[1];
   return {
     type,
     name: process ? preprocessors.reduce((acc, fn) => fn(acc), name) : name,
