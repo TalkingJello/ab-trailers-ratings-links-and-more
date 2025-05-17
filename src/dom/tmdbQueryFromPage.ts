@@ -22,7 +22,8 @@ export function tmdbQueryFromPage(process = true) {
       : post.startsWith("Movie")
       ? TmdbMediaType.Movie
       : false;
-
+  const yearMatch = name.match(/\((\d{4})\)/);
+  const year = yearMatch ? yearMatch[1] : null;
   if (!type) {
     return false;
   }
@@ -31,5 +32,6 @@ export function tmdbQueryFromPage(process = true) {
   return {
     type,
     name: process ? preprocessors.reduce((acc, fn) => fn(acc), name) : name,
+    year,
   };
 }
