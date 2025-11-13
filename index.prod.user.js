@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          AB - Trailers, Ratings, Links (and more?)
 // @namespace     TalkingJello@animebytes.tv
-// @version       1.0.8
+// @version       1.0.9
 // @author        TalkingJello
 // @source        https://github.com/TalkingJello/ab-trailers-ratings-links-and-more
 // @description   Adds trailers, additional ratings, links (and more?) to AB anime pages
@@ -18,11 +18,16 @@
 // @grant         GM_deleteValue
 // @grant         GM_setValue
 // @grant         GM_getValue
+// @grant         GM_getResourceURL
 // @connect       api.themoviedb.org
 // @connect       api.anidb.net
 // @connect       api.jikan.moe
 // @connect       www.imdb.com
 // @connect       youtubei.googleapis.com
+// @resource      robotomono2 https://www.themoviedb.org/assets/2/roboto-mono-v12-vietnamese_latin-ext_latin_greek_cyrillic-ext_cyrillic-regular-0735372f56f4589605c7513431f4970be66099254878de7c38b61cb91aa8bd5e.woff2
+// @resource      robotomono https://www.themoviedb.org/assets/2/roboto-mono-v12-vietnamese_latin-ext_latin_greek_cyrillic-ext_cyrillic-regular-0bdd8d4009a28ef64ef1c3993c267e4f39e3ce33805aa394a60b73fef9fd2712.woff
+// @resource      consensus2 https://www.themoviedb.org/assets/2/Consensus-3cba2c4d050ea63dbf7783173d288faf9ecb2942515a5e7f6e1beecabb2eaf72.woff2
+// @resource      consensus https://www.themoviedb.org/assets/2/Consensus-c65c9c0e1b81777c3f338b194fd293c722e0d1fe6c18231932f1fc59b7679f64.woff
 // ==/UserScript==
 
 /******/ (() => { // webpackBootstrap
@@ -480,6 +485,7 @@ module.exports = {
     "GM_deleteValue",
     "GM_setValue",
     "GM_getValue",
+    "GM_getResourceURL"
   ],
   connect: [
     "api.themoviedb.org",
@@ -489,6 +495,12 @@ module.exports = {
     "youtubei.googleapis.com",
     // "api.myanimelist.net"
   ],
+  resource: [
+    "robotomono2 https://www.themoviedb.org/assets/2/roboto-mono-v12-vietnamese_latin-ext_latin_greek_cyrillic-ext_cyrillic-regular-0735372f56f4589605c7513431f4970be66099254878de7c38b61cb91aa8bd5e.woff2",
+    "robotomono https://www.themoviedb.org/assets/2/roboto-mono-v12-vietnamese_latin-ext_latin_greek_cyrillic-ext_cyrillic-regular-0bdd8d4009a28ef64ef1c3993c267e4f39e3ce33805aa394a60b73fef9fd2712.woff",
+    "consensus2 https://www.themoviedb.org/assets/2/Consensus-3cba2c4d050ea63dbf7783173d288faf9ecb2942515a5e7f6e1beecabb2eaf72.woff2",
+    "consensus https://www.themoviedb.org/assets/2/Consensus-c65c9c0e1b81777c3f338b194fd293c722e0d1fe6c18231932f1fc59b7679f64.woff"
+  ]
 };
 
 
@@ -498,7 +510,7 @@ module.exports = {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"ab-trailers-ratings-links-and-more","description":"Adds trailers, additional ratings, links (and more?) to AB anime pages","version":"1.0.8","author":"TalkingJello","scripts":{"format":"prettier -w ./","build":"webpack --config config/webpack.config.prod.cjs","dev":"webpack --config config/webpack.config.dev.cjs","prepare":"husky install","lint-staged":"lint-staged"},"repository":{"type":"git","url":"https://github.com/TalkingJello/ab-trailers-ratings-links-and-more"},"private":true,"dependencies":{},"lint-staged":{"*.{js,jsx,ts,tsx,json}":["prettier --ignore-path ./.prettierignore --write "]},"devDependencies":{"@types/greasemonkey":"^4.0.4","@types/jquery":"^3.5.14","@types/node":"^18.11.8","browserslist":"^4.21.4","cross-env":"^7.0.3","css-loader":"^6.7.1","husky":"^8.0.1","less":"^4.1.3","less-loader":"^11.1.0","lint-staged":"^13.0.3","prettier":"^2.7.1","style-loader":"^3.3.1","ts-loader":"^9.4.1","typescript":"^4.8.4","userscript-metadata-webpack-plugin":"^0.2.12","webpack":"^5.74.0","webpack-bundle-analyzer":"^4.7.0","webpack-cli":"^4.10.0","webpack-livereload-plugin":"^3.0.2","webpack-merge":"^5.8.0","webpack-sources":"^3.2.3"}}');
+module.exports = JSON.parse('{"name":"ab-trailers-ratings-links-and-more","description":"Adds trailers, additional ratings, links (and more?) to AB anime pages","version":"1.0.9","author":"TalkingJello","scripts":{"format":"prettier -w ./","build":"webpack --config config/webpack.config.prod.cjs","dev":"webpack --config config/webpack.config.dev.cjs","prepare":"husky install","lint-staged":"lint-staged"},"repository":{"type":"git","url":"https://github.com/TalkingJello/ab-trailers-ratings-links-and-more"},"private":true,"dependencies":{},"lint-staged":{"*.{js,jsx,ts,tsx,json}":["prettier --ignore-path ./.prettierignore --write "]},"devDependencies":{"@types/greasemonkey":"^4.0.4","@types/jquery":"^3.5.14","@types/node":"^18.11.8","browserslist":"^4.21.4","cross-env":"^7.0.3","css-loader":"^6.7.1","husky":"^8.0.1","less":"^4.1.3","less-loader":"^11.1.0","lint-staged":"^13.0.3","prettier":"^2.7.1","style-loader":"^3.3.1","ts-loader":"^9.4.1","typescript":"^4.8.4","userscript-metadata-webpack-plugin":"^0.2.12","webpack":"^5.74.0","webpack-bundle-analyzer":"^4.7.0","webpack-cli":"^4.10.0","webpack-livereload-plugin":"^3.0.2","webpack-merge":"^5.8.0","webpack-sources":"^3.2.3"}}');
 
 /***/ })
 
@@ -2116,13 +2128,15 @@ so it might not be playable.`, err);
                 setError(`Unsupported trailer site: ${trailer.site}. Please report to TalkingJello with the link to the torrent group`);
         }
         iframe = GM_addElement(body.get(0), "iframe", {
-            src,
+            src: src,
             width: "693",
             height: "390",
-            allowFullscreen: "",
-            allow: "fullscreen;",
+            title: "YouTube video player",
+            allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
+            allowFullscreen: true,
+            referrerpolicy: "strict-origin-when-cross-origin",
+            style: "border: none;"
         });
-        iframe.style.border = "none";
     };
     if (trailers.length > 1) {
         // trailers selection
@@ -2495,22 +2509,26 @@ class TvdbProvider extends MetadataProvider {
 }
 
 ;// CONCATENATED MODULE: ./src/style/consensus.ts
-/* harmony default export */ const consensus = (`@font-face {
+const robotomono2 = GM_getResourceURL("robotomono2");
+const robotomono = GM_getResourceURL("robotomono");
+const consensus2 = GM_getResourceURL("consensus2");
+const consensus = GM_getResourceURL("consensus");
+/* harmony default export */ const style_consensus = (`@font-face {
     font-family: "Roboto Mono";
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url("https://www.themoviedb.org/assets/2/roboto-mono-v12-vietnamese_latin-ext_latin_greek_cyrillic-ext_cyrillic-regular-0735372f56f4589605c7513431f4970be66099254878de7c38b61cb91aa8bd5e.woff2")
+    src: url("${robotomono2}")
             format("woff2"),
-        url("https://www.themoviedb.org/assets/2/roboto-mono-v12-vietnamese_latin-ext_latin_greek_cyrillic-ext_cyrillic-regular-0bdd8d4009a28ef64ef1c3993c267e4f39e3ce33805aa394a60b73fef9fd2712.woff")
+        url("${robotomono}")
             format("woff");
 }
 
 @font-face {
     font-family: "Consensus";
-    src: url("https://www.themoviedb.org/assets/2/Consensus-3cba2c4d050ea63dbf7783173d288faf9ecb2942515a5e7f6e1beecabb2eaf72.woff2")
+    src: url("${consensus2}")
             format("woff2"),
-        url("https://www.themoviedb.org/assets/2/Consensus-c65c9c0e1b81777c3f338b194fd293c722e0d1fe6c18231932f1fc59b7679f64.woff")
+        url("${consensus}")
             format("woff");
     font-weight: normal;
     font-style: normal;
@@ -3014,7 +3032,7 @@ var update = injectStylesIntoStyleTag_default()(main/* default */.Z, options);
 
 async function src_main() {
     // General
-    GM_addStyle(consensus);
+    GM_addStyle(style_consensus);
     placeSynopsis();
     // Providers
     const providers = [
