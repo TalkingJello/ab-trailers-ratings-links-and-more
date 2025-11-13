@@ -1527,7 +1527,7 @@ async function tmdbItem() {
         return false;
     }
     log("Media detected on page:", mip);
-    const id = await TmdbProvider.identify(mip.type, mip.name);
+    const id = await TmdbProvider.identify(mip.type, mip.name, mip.year);
     if (!id) {
         log("Could not identify media against TMDB");
         return false;
@@ -1616,15 +1616,15 @@ class TmdbProvider extends MetadataProvider {
         }
         return reducedName;
     }
-    static async identify(type, name) {
-        const key = `tmdb_${type}_by_name_${name}`;
+    static async identify(type, name, year) {
+        const key = `tmdb_${type}_by_name_${name}${year ? `_by_year_${year}` : ''}`;
         const cached = checkCache(key, 1000 * 60 * 60 * 24 * 3); // 3 days
         // Try reduced query (will probably also be cached)
         if (cached === false) {
             const reducedName = this.reduceNameQuery(name);
             if (reducedName) {
                 log(`trying reduced query ${reducedName}`);
-                return await this.identify(type, reducedName);
+                return await this.identify(type, reducedName, year);
             }
             return false;
         }
@@ -1638,6 +1638,10 @@ class TmdbProvider extends MetadataProvider {
         url.searchParams.set("include_adult", "true");
         url.searchParams.set("language", TMDB_LANGUAGE);
         url.searchParams.set("query", name);
+        // Add year to the query if available
+        if (year) {
+            url.searchParams.set("year", year);
+        }
         log(`fetching ${url.toString()}`);
         url.searchParams.set("api_key", this.getUserApiKey("TMDB", TMDB_DEFAULT_API_KEY));
         const res = await gmFetchJson({
@@ -1651,7 +1655,7 @@ class TmdbProvider extends MetadataProvider {
             saveCache(key, false);
             const reducedName = this.reduceNameQuery(name);
             if (reducedName) {
-                return await this.identify(type, reducedName);
+                return await this.identify(type, reducedName, year);
             }
             return false;
         }
@@ -1908,7 +1912,7 @@ const preprocessors = [
 function tmdbQueryFromPage(process = true) {
     const s = $("#content > div.thin > h2:first-child").text().split(" - ");
     const post = s.pop();
-    const type = post.startsWith("TV Series") || post.startsWith("ONA")
+    const type = post.startsWith("TV Series") || post.startsWith("ONA") || post.startsWith("OVA")
         ? TmdbMediaType.Tv
         : post.startsWith("Movie")
             ? TmdbMediaType.Movie
@@ -1917,9 +1921,12 @@ function tmdbQueryFromPage(process = true) {
         return false;
     }
     const name = s.join(" - ");
+    const yearMatch = post.match(/\[(\d{4})\]/);
+    const year = yearMatch[1];
     return {
         type,
         name: process ? preprocessors.reduce((acc, fn) => fn(acc), name) : name,
+        year,
     };
 }
 
