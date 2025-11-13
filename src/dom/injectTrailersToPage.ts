@@ -116,13 +116,15 @@ so it might not be playable.`,
     }
 
     iframe = GM_addElement(body.get(0), "iframe", {
-      src,
+      src: src,
       width: "693",
       height: "390",
-      allowFullscreen: "",
-      allow: "fullscreen;",
+      title: "YouTube video player",
+      allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
+      allowFullscreen: true,
+      referrerpolicy: "strict-origin-when-cross-origin",
+      style: "border: none;"
     }) as HTMLIFrameElement;
-    iframe.style.border = "none";
   };
 
   if (trailers.length > 1) {
