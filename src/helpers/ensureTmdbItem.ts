@@ -11,7 +11,7 @@ async function tmdbItem(): Promise<TmdbItem | false> {
   }
   log("Media detected on page:", mip);
 
-  const id = await TmdbProvider.identify(mip.type, mip.name);
+  const id = await TmdbProvider.identify(mip.type, mip.name, mip.year);
   if (!id) {
     log("Could not identify media against TMDB");
     return false;
