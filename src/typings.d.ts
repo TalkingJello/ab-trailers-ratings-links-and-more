@@ -15,6 +15,7 @@ declare function GM_getValue(key: string, defaultValue?: any): any;
 declare function GM_setValue(key: string, value: any): void;
 declare function GM_deleteValue(key: string): void;
 declare function GM_listValues(): string[];
+declare function GM_getResourceURL(resource: string): string;
 
 /**
  * Performs a similar function to the standard XMLHttpRequest object, but

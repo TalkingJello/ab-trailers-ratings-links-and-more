@@ -1,19 +1,24 @@
+const robotomono2 = GM_getResourceURL("robotomono2");
+const robotomono = GM_getResourceURL("robotomono");
+const consensus2 = GM_getResourceURL("consensus2");
+const consensus = GM_getResourceURL("consensus");
+
 export default `@font-face {
     font-family: "Roboto Mono";
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url("https://www.themoviedb.org/assets/2/roboto-mono-v12-vietnamese_latin-ext_latin_greek_cyrillic-ext_cyrillic-regular-0735372f56f4589605c7513431f4970be66099254878de7c38b61cb91aa8bd5e.woff2")
+    src: url("${robotomono2}")
             format("woff2"),
-        url("https://www.themoviedb.org/assets/2/roboto-mono-v12-vietnamese_latin-ext_latin_greek_cyrillic-ext_cyrillic-regular-0bdd8d4009a28ef64ef1c3993c267e4f39e3ce33805aa394a60b73fef9fd2712.woff")
+        url("${robotomono}")
             format("woff");
 }
 
 @font-face {
     font-family: "Consensus";
-    src: url("https://www.themoviedb.org/assets/2/Consensus-3cba2c4d050ea63dbf7783173d288faf9ecb2942515a5e7f6e1beecabb2eaf72.woff2")
+    src: url("${consensus2}")
             format("woff2"),
-        url("https://www.themoviedb.org/assets/2/Consensus-c65c9c0e1b81777c3f338b194fd293c722e0d1fe6c18231932f1fc59b7679f64.woff")
+        url("${consensus}")
             format("woff");
     font-weight: normal;
     font-style: normal;
