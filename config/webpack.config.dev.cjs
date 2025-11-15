@@ -6,6 +6,8 @@ const UserScriptMetaDataPlugin = require("userscript-metadata-webpack-plugin");
 const metadata = require("./metadata.cjs");
 const webpackConfig = require("./webpack.config.base.cjs");
 
+const siteTarget = process.env.SITE_TARGET || "ab";
+
 metadata.require.push(
   "file://" + path.resolve(__dirname, "../dist/index.debug.js")
 );
@@ -14,14 +16,14 @@ const cfg = merge(webpackConfig, {
   mode: "development",
   cache: {
     type: "filesystem",
-    name: "dev",
+    name: `dev-${siteTarget}`,
   },
   entry: {
     debug: webpackConfig.entry,
     "dev.user": path.resolve(__dirname, "./empty.cjs"),
   },
   output: {
-    filename: "index.[name].js",
+    filename: `${siteTarget === "ab" ? "index" : siteTarget}.[name].js`,
     path: path.resolve(__dirname, "../dist"),
   },
   devtool: "eval-source-map",

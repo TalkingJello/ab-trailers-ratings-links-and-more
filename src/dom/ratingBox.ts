@@ -1,5 +1,6 @@
 import { UNIQUE } from "../constants";
 import { displayVotes } from "../helpers/formatVotes";
+import { siteColors } from "../helpers/ratingTextColors";
 import { Score } from "../providers/MetadataProvider";
 
 export function ratingBox(title: string, subtitle: string, link: string) {
@@ -29,14 +30,14 @@ export function ratingBox(title: string, subtitle: string, link: string) {
               style="
                   font-weight: 700;
                   margin-left: 5px;
-                  color: #fff;
+                  color: ${siteColors.textPrimary};
                   line-height: 20px;
                   font-size: 13px;
               "
           >
           ${title}
           <br>
-          <span style="color: gray;font-size: 12.5px;">${subtitle}</span>
+          <span style="color: ${siteColors.textSecondary};font-size: 12.5px;">${subtitle}</span>
           </div>
       </div>
   `);

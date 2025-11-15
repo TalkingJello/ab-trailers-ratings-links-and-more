@@ -1,10 +1,7 @@
-import { internetOrWebsiteOrLinkDownErrorTitle } from "../constants";
 import { settings } from "../delicious";
-import { logError } from "../helpers/log";
-import { MetadataProvider } from "../providers/MetadataProvider";
-import { uiShowError } from "./displayErrors";
+import { OutLink } from "../providers/MetadataProvider";
 
-export async function injectLinksToPage(providers: MetadataProvider[]) {
+export function abInjectLinksToPage(outLinks: OutLink[]) {
   const links = $("#content > div.thin > h3");
   if (settings.linksInNewTab) {
     links.find("a").attr("target", "_blank");
@@ -22,35 +19,31 @@ export async function injectLinksToPage(providers: MetadataProvider[]) {
     links.after(jumpToTorrents);
   }
 
-  const res = await Promise.allSettled(
-    providers.map(async (p) => {
-      try {
-        return await p.getLink();
-      } catch (err) {
-        uiShowError(
-          `Failed to create external link to ${p.name}`,
-          internetOrWebsiteOrLinkDownErrorTitle(p.name),
-          err
-        );
-        throw err;
-      }
-    })
-  );
-  res.forEach((r) => {
-    if (r.status === "rejected") {
-      logError(r.reason);
-      return;
-    }
-
-    const link = r.value;
-    if (!link) {
-      return;
-    }
+  outLinks.forEach((link) => {
     links.append(
       " | ",
       `<a href="${link.url}" target="${
         settings.linksInNewTab ? "_blank" : ""
       }">${link.name}</a>`
     );
+  });
+}
+
+export function moeInjectLinksToPage(outLinks: OutLink[]) {
+  const card = $(
+    `#layout-wrapper div.row > div:first-child > div.card:nth-child(3) > div.card-body`
+  );
+
+  outLinks.forEach((link) => {
+    const span = $(`<span class="fw-semibold">${link.name}</span>`);
+    const p = $(`
+      <p class="font-size-13 mb-2">
+        <a href="${link.url}" target="${
+      settings.linksInNewTab ? "_blank" : ""
+    }">${link.url}</a>
+      </p>
+    `);
+    card.append(span);
+    card.append(p);
   });
 }

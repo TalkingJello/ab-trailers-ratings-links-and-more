@@ -25,3 +25,4 @@ declare function GM_getResourceURL(resource: string): string;
 declare function GM_xmlhttpRequest(details: GM.Request): void;
 
 declare var delicious: any;
+declare var SITE_TARGET: string;

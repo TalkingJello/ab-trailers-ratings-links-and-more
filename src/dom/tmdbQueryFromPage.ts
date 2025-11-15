@@ -1,3 +1,6 @@
+import { log } from "../helpers/log";
+import { moeGetAnimeMetadata } from "../helpers/moeGetAnimeMetadata";
+import { site } from "../helpers/site";
 import { TmdbMediaType } from "../providers/TmdbProvider";
 
 type Preprocessor = (title: string) => string;
@@ -13,11 +16,13 @@ const preprocessors: Preprocessor[] = [
   (title) => title.toLowerCase(),
 ];
 
-export function tmdbQueryFromPage(process = true) {
+export function abTmdbQueryFromPage(process = true) {
   const s = $("#content > div.thin > h2:first-child").text().split(" - ");
   const post = s.pop();
   const type =
-    post.startsWith("TV Series") || post.startsWith("ONA") || post.startsWith("OVA")
+    post.startsWith("TV Series") ||
+    post.startsWith("ONA") ||
+    post.startsWith("OVA")
       ? TmdbMediaType.Tv
       : post.startsWith("Movie")
       ? TmdbMediaType.Movie
@@ -35,4 +40,37 @@ export function tmdbQueryFromPage(process = true) {
     name: process ? preprocessors.reduce((acc, fn) => fn(acc), name) : name,
     year,
   };
+}
+
+export function moeTmdbQueryFromPage(process = true) {
+  const format = moeGetAnimeMetadata("Format");
+  log("Moe format found:", format);
+  const type =
+    format === "TV" || format === "ONA" || format === "OVA"
+      ? TmdbMediaType.Tv
+      : format === "Movie"
+      ? TmdbMediaType.Movie
+      : false;
+
+  if (!type) {
+    return false;
+  }
+
+  const name = moeGetAnimeMetadata("English");
+  const year = moeGetAnimeMetadata("Started").slice(-4);
+  return {
+    type,
+    name: process ? preprocessors.reduce((acc, fn) => fn(acc), name) : name,
+    year,
+  };
+}
+
+export function tmdbQueryFromPage(process = true) {
+  if (site.ab) {
+    return abTmdbQueryFromPage(process);
+  } else if (site.moe) {
+    return moeTmdbQueryFromPage(process);
+  }
+
+  return false;
 }

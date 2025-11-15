@@ -1,7 +1,7 @@
 import { malIdFromPage } from "../dom/idsFromPage";
 import { ratingBoxFromScore } from "../dom/ratingBox";
 import { checkCache, saveCache } from "../helpers/cache";
-import { gmFetchJson } from "../helpers/gmFetchHelpers";
+import { fetchJikans } from "../helpers/fetchJikans";
 import { log, logError } from "../helpers/log";
 import { setThrottleUse, throttle } from "../helpers/throttle";
 import {
@@ -26,29 +26,6 @@ export class MalJikanProvider extends MetadataProvider {
     return true;
   }
 
-  private async fetchJikans(url: string) {
-    log(`Fetching ${url}`);
-
-    const res = await gmFetchJson({
-      method: "GET",
-      url: url,
-    });
-
-    if (res.error) {
-      logError("mal res", res);
-      throw new Error(
-        `Failed to fetch Jikan (MAL) - ${res.message} - ${res.error}`
-      );
-    }
-
-    if (!res.data) {
-      logError("mal res", res);
-      throw new Error("Invalid response from Jikan (MAL)");
-    }
-
-    return res.data;
-  }
-
   async getScore(): Promise<false | Score> {
     const ok = await this.ensureInitialized();
     if (!ok) {
@@ -65,7 +42,7 @@ export class MalJikanProvider extends MetadataProvider {
     }
 
     await throttle("jikan", 800);
-    const data = await this.fetchJikans(
+    const data = await fetchJikans(
       `https://api.jikan.moe/v4/anime/${this.malId}`
     );
     setThrottleUse("jikan");
@@ -75,6 +52,7 @@ export class MalJikanProvider extends MetadataProvider {
       return false;
     }
 
+    log("mal data", data);
     const score: Score = {
       votes: data.scored_by,
       rating: data.score,
@@ -97,7 +75,7 @@ export class MalJikanProvider extends MetadataProvider {
       return cached as Trailer[];
     }
 
-    const data = await this.fetchJikans(
+    const data = await fetchJikans(
       `https://api.jikan.moe/v4/anime/${this.malId}/videos`
     );
 

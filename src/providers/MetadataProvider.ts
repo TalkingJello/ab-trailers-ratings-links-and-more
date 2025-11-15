@@ -2,6 +2,7 @@ import { internetOrWebsiteOrLinkDownErrorTitle, UNIQUE } from "../constants";
 import { uiShowError } from "../dom/displayErrors";
 import { YoutubeItem } from "../helpers/fetchYoutubeVideoInfo";
 import { log } from "../helpers/log";
+import { site } from "../helpers/site";
 
 export enum VideoSite {
   YouTube = "YouTube",
@@ -141,12 +142,22 @@ export abstract class MetadataProvider {
     const div = $(`<div id="${id}"></div>`);
 
     // Set api key
+    const overrideClassName = site.moe
+      ? "btn"
+      : currentApiKey
+      ? "btn-delete"
+      : "btn-sub";
+
     const set = $(`<li>
 <span class="ue_left strong">API Key</span>
 <span class="ue_right">
   <input type="button"
   value="${currentApiKey ? "Override Current" : "Set"} API Key"
-  class="btn-${currentApiKey ? "delete" : "sub"}" style="">
+  class="${overrideClassName}" style="${
+      site.moe
+        ? "background-image: linear-gradient(rgb(234, 63, 83) 0%, rgb(237, 16, 45) 100%); color: white;"
+        : ""
+    }">
   <label style="margin-left: 4px;">
   Click to set your ${this.name} API key (aka ${this.apiKeyName}).
   This is required for this provider to work.
@@ -174,7 +185,9 @@ export abstract class MetadataProvider {
 <span class="ue_right">
   <input type="button"
   value="Test API Key"
-  class="btn-sub" style="background: -webkit-gradient(linear,left top,left bottom,color-stop(0,#7eda37),color-stop(100%,#047d00));">
+  class="${
+    site.ab ? "btn-sub" : "btn"
+  }" style="background: -webkit-gradient(linear,left top,left bottom,color-stop(0,#7eda37),color-stop(100%,#047d00)); color: white;">
   <label style="margin-left: 4px;">
   Click to test and verify that the entered API key works.
   If it doesn't work make sure you entered it correctly.
