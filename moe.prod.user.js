@@ -1,10 +1,11 @@
 // ==UserScript==
-// @name          AB - Trailers, Ratings, Links (and more?)
+// @name          Moe - Trailers, Ratings, Links (and more?)
 // @description   Adds trailers, additional ratings, links (and more?) to AB/Moe anime pages
-// @icon          http://animebytes.tv/favicon.ico
-// @match         *://animebytes.tv/torrents.php?*
-// @match         *://animebytes.tv/user.php?action=edit*
-// @require       https://raw.githubusercontent.com/momentary0/AB-Userscripts/b1e7aac27e1f49391147cf068326f278bb40e20d/delicious-library/src/ab_delicious_library.js
+// @icon          https://nzbs.moe/static/img/favicon.svg
+// @match         *://nzbs.moe/series/*
+// @match         *://nzbs.moe/settings*
+// @require       https://code.jquery.com/jquery-3.7.1.min.js
+// @require       https://github.com/TalkingJello/moe-delicious-library/raw/refs/heads/main/moe_delicious_library.js
 // @require       https://raw.githubusercontent.com/rendro/easy-pie-chart/97b5824bf423410c3c6a1e971860159f17ee6ee6/dist/jquery.easypiechart.min.js
 // @namespace     TalkingJello@animebytes.tv
 // @version       1.1.0
@@ -494,7 +495,7 @@ let target = "ab";
 if (typeof process !== "undefined" && process.env.SITE_TARGET) {
   target = process.env.SITE_TARGET;
 } else if (true) {
-  target = "ab";
+  target = "moe";
 }
 
 const siteSpecificConfig = target === "moe" ? moe : ab;
@@ -668,8 +669,8 @@ function clearCache() {
 
 ;// CONCATENATED MODULE: ./src/helpers/site.ts
 const site = {
-    ab: "ab" === "ab",
-    moe: "ab" === "moe",
+    ab: "moe" === "ab",
+    moe: "moe" === "moe",
 };
 
 ;// CONCATENATED MODULE: ./src/dom/pageSection.ts
