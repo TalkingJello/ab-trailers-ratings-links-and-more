@@ -51,6 +51,8 @@ export async function sortTrailers(tr: WithProvider<TrailerWithInfo>[]) {
     tr,
     // Tiers of preference
     [
+      // Embedded from moe always first
+      (trailer) => trailer.provider.name === "Moe Trailer",
       // Prefer MAL
       (trailer) => preferMal && trailer.provider.name === "MAL",
       // Dubs

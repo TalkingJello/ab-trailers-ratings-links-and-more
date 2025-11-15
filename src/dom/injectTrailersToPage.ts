@@ -2,6 +2,8 @@ import { UNIQUE } from "../constants";
 import { settings } from "../delicious";
 import { fetchYoutubeVideoInfo } from "../helpers/fetchYoutubeVideoInfo";
 import { log, logError } from "../helpers/log";
+import { siteColors } from "../helpers/ratingTextColors";
+import { site } from "../helpers/site";
 import { sortTrailers } from "../helpers/sortTrailers";
 import {
   Trailer,
@@ -81,15 +83,42 @@ so it might not be playable.`,
   trailers = await sortTrailers(trailers);
 
   // General layout
-  const synopsis = $('.box > .head > strong:contains("Plot Synopsis")')
-    .parent()
-    .parent();
   const { container, body, head, setError, resetError } =
     pageSection("Trailer");
-  if (settings.trailerAfterSynopsis) {
-    container.insertAfter(synopsis);
-  } else {
-    container.insertBefore(synopsis);
+  if (site.ab) {
+    const synopsis = $('.box > .head > strong:contains("Plot Synopsis")')
+      .parent()
+      .parent();
+
+    if (settings.trailerAfterSynopsis) {
+      container.insertAfter(synopsis);
+    } else {
+      container.insertBefore(synopsis);
+    }
+  } else if (site.moe) {
+    // remove default trailer
+    const h6 = $(
+      `#layout-wrapper div.row > div:first-child > h6:contains("Trailer")`
+    );
+    const parent = h6.parent();
+    h6.next().remove();
+    h6.remove();
+
+    // insert our trailer
+    if (settings.trailerInSidebar) {
+      parent.append(container);
+    } else {
+      const synopsisTitle = $(
+        `#layout-wrapper div.row > div:last-child > h6:contains("Synopsis")`
+      );
+      const synopsisCard = synopsisTitle.next();
+
+      if (settings.trailerAfterSynopsis) {
+        container.insertAfter(synopsisCard);
+      } else {
+        container.insertBefore(synopsisTitle);
+      }
+    }
   }
 
   // Load trailer to page
@@ -117,20 +146,33 @@ so it might not be playable.`,
 
     iframe = GM_addElement(body.get(0), "iframe", {
       src: src,
-      width: "693",
-      height: "390",
+      width: settings.trailerInSidebar ? "100%" : 693 * (site.moe ? 1.2 : 1),
+      height: settings.trailerInSidebar ? "auto" : 390 * (site.moe ? 1.2 : 1),
       title: "YouTube video player",
-      allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
+      allow:
+        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
       allowFullscreen: true,
       referrerpolicy: "strict-origin-when-cross-origin",
-      style: "border: none;"
+      style: `border: none;${site.moe ? "border-radius: 7.7px;" : ""}`,
     }) as HTMLIFrameElement;
   };
 
   if (trailers.length > 1) {
     // trailers selection
     const select = $(
-      `<select name="trailers" id="${UNIQUE}-trailer-selection" style="margin-left: 10px; padding: 2px;max-width: 90%;"></select>`
+      `<select name="trailers" id="${UNIQUE}-trailer-selection" style="margin-left: 10px; padding: 2px; max-width: 90%;${
+        site.moe
+          ? `height: 25px;
+             border-radius: 5px;
+             border: 3px solid ${siteColors.border};
+             color: ${siteColors.textSecondary};
+             background: ${siteColors.backgroundPopout};
+             flex-basis: 0;
+             width: 100%;
+             flex-grow: 1;
+             padding: 0 !important;`
+          : ""
+      }"></select>`
     );
     trailers.forEach((t, i) => {
       const opt = $(`<option value="${i}"></option>`);

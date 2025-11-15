@@ -1,24 +1,64 @@
 import { ANIDB_CLIENT_NAME, ANIDB_CLIENT_VERSION } from "../constants";
-import { aniDbIdFromPage } from "../dom/idsFromPage";
+import { abAniDbIdFromPage, malIdFromPage } from "../dom/idsFromPage";
 import { ratingBoxFromScore } from "../dom/ratingBox";
 import { checkCache, saveCache } from "../helpers/cache";
+import { fetchMalExternals } from "../helpers/fetchMalExternals";
 import { gmFetch } from "../helpers/gmFetchHelpers";
-import { log } from "../helpers/log";
+import { log, logError } from "../helpers/log";
+import { site } from "../helpers/site";
 import { setThrottleUse, throttle } from "../helpers/throttle";
-import { MetadataProvider, ProviderFlags, Score } from "./MetadataProvider";
+import {
+  MetadataProvider,
+  OutLink,
+  ProviderFlags,
+  Score,
+} from "./MetadataProvider";
+
+// ab already has AniDB links, so no need to provide them again
+const flags = site.ab
+  ? new Set<ProviderFlags>([ProviderFlags.Score])
+  : new Set<ProviderFlags>([ProviderFlags.Score, ProviderFlags.Link]);
 
 export class AniDbProvider extends MetadataProvider {
   name = "AniDB";
-  flags = new Set([ProviderFlags.Score]);
+  flags = flags;
   private aniDbId: string;
 
   async init() {
-    const res = aniDbIdFromPage();
-    if (!res) {
-      return false;
+    if (site.ab) {
+      const res = abAniDbIdFromPage();
+      if (!res) {
+        logError("Failed to find AniDB ID on page");
+        return false;
+      }
+
+      this.aniDbId = res;
     }
 
-    this.aniDbId = res;
+    if (site.moe) {
+      const malId = malIdFromPage();
+      if (!malId) {
+        logError("Failed to find MAL ID on page for externals fetch");
+        return false;
+      }
+
+      const externals = await fetchMalExternals(malId);
+
+      const aniDbUrl = externals.find((e) => e.name === "AniDB")?.url;
+      if (!aniDbUrl) {
+        logError("No AniDB external found in MAL externals", externals);
+        return false;
+      }
+
+      const match = aniDbUrl.match(/aid=(\d+)/);
+      if (!match) {
+        logError("Failed to find extract AniDB ID from url", aniDbUrl);
+        return false;
+      }
+
+      this.aniDbId = match[1];
+    }
+
     return true;
   }
 
@@ -69,6 +109,18 @@ export class AniDbProvider extends MetadataProvider {
     } catch (e) {
       throw new Error("Invalid AniDB response - " + e.message);
     }
+  }
+
+  async getLink(): Promise<OutLink | false> {
+    const ok = await this.ensureInitialized();
+    if (!ok) {
+      return false;
+    }
+
+    return {
+      name: "AniDB",
+      url: `https://anidb.net/anime/${this.aniDbId}/`,
+    };
   }
 
   insertScore(parent: JQuery<HTMLElement>, score: Score): void {

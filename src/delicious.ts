@@ -1,14 +1,15 @@
 import { NAME } from "./constants";
 import { clearCache } from "./helpers/cache";
 import { log } from "./helpers/log";
+import { site } from "./helpers/site";
 import { MetadataProvider, ProviderFlags } from "./providers/MetadataProvider";
 
 function deliciousSubHeading(s: HTMLElement, title: string) {
   const h3 = $(`<h3 style="
     margin-bottom: 2px;
     margin-top: 18px;
-    font-size: 12px;
-    margin-left: 20px;
+    font-size: ${site.ab ? "12px" : "14px"};
+    ${site.ab ? "margin-left: 20px;" : ""}
     text-decoration: underline;">${title}</h3>`);
 
   $(s).append(h3);
@@ -49,7 +50,7 @@ export function insertDeliciousSettingsUi(providers: MetadataProvider[]) {
     )
   );
 
-  delicious.settings.init("itemsOnTop", true);
+  delicious.settings.init("itemsOnTop", site.ab); // default true on AB, false on moe
   s.appendChild(
     delicious.settings.createCheckbox(
       "itemsOnTop",
@@ -58,14 +59,16 @@ export function insertDeliciousSettingsUi(providers: MetadataProvider[]) {
     )
   );
 
-  delicious.settings.init("jumpToTorrentsLink", true);
-  s.appendChild(
-    delicious.settings.createCheckbox(
-      "jumpToTorrentsLink",
-      "Jump to Torrents Link",
-      "Add a link after the external anime links, that will jump to the torrent list."
-    )
-  );
+  if (site.ab) {
+    delicious.settings.init("jumpToTorrentsLink", true);
+    s.appendChild(
+      delicious.settings.createCheckbox(
+        "jumpToTorrentsLink",
+        "Jump to Torrents Link",
+        "Add a link after the external anime links, that will jump to the torrent list."
+      )
+    );
+  }
 
   delicious.settings.init("trailerAfterSynopsis", false);
   s.appendChild(
@@ -76,6 +79,17 @@ export function insertDeliciousSettingsUi(providers: MetadataProvider[]) {
     )
   );
 
+  if (site.moe) {
+    delicious.settings.init("trailerInSidebar", false);
+    s.appendChild(
+      delicious.settings.createCheckbox(
+        "trailerInSidebar",
+        "Trailer In Sidebar",
+        `Keeps the trailer small in the sidebar (original position). Makes "Trailer After Synopsis" option irrelevant.`
+      )
+    );
+  }
+
   delicious.settings.init("showAverageRating", true);
   s.appendChild(
     delicious.settings.createCheckbox(
@@ -85,18 +99,20 @@ export function insertDeliciousSettingsUi(providers: MetadataProvider[]) {
     )
   );
 
-  delicious.settings.init(`ab-${ProviderFlags.Score}-average-weight`, 1);
-  s.appendChild(
-    delicious.settings.createNumberInput(
-      `ab-${ProviderFlags.Score}-average-weight`,
-      "AB Rating Weight in Average",
-      `The weight of the AnimeBytes rating in the average score widget. Can be set to 0 to not include AnimeBytes score in the average. 1 is the default.`,
-      {
-        default: "1",
-        required: true,
-      }
-    )
-  );
+  if (site.ab) {
+    delicious.settings.init(`ab-${ProviderFlags.Score}-average-weight`, 1);
+    s.appendChild(
+      delicious.settings.createNumberInput(
+        `ab-${ProviderFlags.Score}-average-weight`,
+        "AB Rating Weight in Average",
+        `The weight of the AnimeBytes rating in the average score widget. Can be set to 0 to not include AnimeBytes score in the average. 1 is the default.`,
+        {
+          default: "1",
+          required: true,
+        }
+      )
+    );
+  }
 
   // Provider specific
   providers.forEach((p) => {
@@ -127,24 +143,29 @@ Downside is that the ratings will be a bit more squished together
 and that depending on your screen size and zoom level, the original issue can still occur.`
     )
   );
-  delicious.settings.init("abAndAverageOnSeperateRow", false);
-  s.appendChild(
-    delicious.settings.createCheckbox(
-      "abAndAverageOnSeperateRow",
-      "AB and Average Scores on Seperate Row",
-      `Puts the AnimeBytes and average score widgets on a seperate row from the other providers.
+
+  if (site.ab) {
+    delicious.settings.init("abAndAverageOnSeperateRow", false);
+    s.appendChild(
+      delicious.settings.createCheckbox(
+        "abAndAverageOnSeperateRow",
+        "AB and Average Scores on Seperate Row",
+        `Puts the AnimeBytes and average score widgets on a seperate row from the other providers.
 This in essence "forces" a wrap,
 but in ensures they are wrapped together which looks better.
 Downside is that you will have 2 rows of ratings instead of 1,
 but the ratings will be more spaced out and there is no risk of still wrapping
 like with the other option.`
-    )
-  );
+      )
+    );
+  }
 
   // Buttons
   deliciousSubHeading(s, "Funny Looking Buttons");
   const clearCacheButton = $(
-    `<input type="button" style="margin-left: 20px;" value="Clear Cache"/>`
+    `<input type="button" style="margin-left: 20px;" value="Clear Cache" ${
+      site.moe ? `class="btn btn-secondary"` : ""
+    }/>`
   );
   clearCacheButton.click(() => {
     clearCache();
@@ -153,7 +174,9 @@ like with the other option.`
   $(s).append(clearCacheButton);
 
   const resetSettingsButton = $(
-    `<input type="button" style="margin-left: 20px;" value="Reset Settings"/>`
+    `<input type="button" style="margin-left: 20px;" value="Reset Settings" ${
+      site.moe ? `class="btn btn-secondary"` : ""
+    }/>`
   );
   resetSettingsButton.click(() => {
     // confirm
@@ -170,7 +193,9 @@ like with the other option.`
   $(s).append(resetSettingsButton);
 
   const resetApiKeysButton = $(
-    `<input type="button" style="margin-left: 20px;" value="Reset API Keys"/>`
+    `<input type="button" style="margin-left: 20px;" value="Reset API Keys" ${
+      site.moe ? `class="btn btn-secondary"` : ""
+    }/>`
   );
   resetApiKeysButton.click(() => {
     // confirm
@@ -198,6 +223,7 @@ export const settings = {
   trailerAfterSynopsis: JSON.parse(
     GM_getValue("trailerAfterSynopsis", "false")
   ),
+  trailerInSidebar: JSON.parse(GM_getValue("trailerInSidebar", "false")),
   linksInNewTab: JSON.parse(GM_getValue("linksInNewTab", "true")),
   showAverageRating: JSON.parse(GM_getValue("showAverageRating", "true")),
   abScoreAverageWeight: JSON.parse(

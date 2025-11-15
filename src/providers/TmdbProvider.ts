@@ -85,7 +85,7 @@ export class TmdbProvider extends MetadataProvider {
     name: string,
     year: string
   ): Promise<TmdbIdentified | false> {
-    const key = `tmdb_${type}_by_name_${name}${year ? `_by_year_${year}` : ''}`;
+    const key = `tmdb_${type}_by_name_${name}${year ? `_by_year_${year}` : ""}`;
     const cached = checkCache(key, 1000 * 60 * 60 * 24 * 3); // 3 days
 
     // Try reduced query (will probably also be cached)
@@ -112,7 +112,7 @@ export class TmdbProvider extends MetadataProvider {
     url.searchParams.set("query", name);
     // Add year to the query if available
     if (year) {
-            url.searchParams.set("year", year);
+      url.searchParams.set("year", year);
     }
     log(`fetching ${url.toString()}`);
     url.searchParams.set(
@@ -225,6 +225,7 @@ export class TmdbProvider extends MetadataProvider {
 
   async init() {
     const res = await ensureTmdbItem();
+
     if (!res) {
       return false;
     }

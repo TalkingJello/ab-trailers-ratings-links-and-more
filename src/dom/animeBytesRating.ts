@@ -1,6 +1,7 @@
 import { UNIQUE } from "../constants";
 import { displayVotes } from "../helpers/formatVotes";
 import { log } from "../helpers/log";
+import { siteColors } from "../helpers/ratingTextColors";
 import { subscribeToAbScoreChange } from "../helpers/subscribeToAbScoreChange";
 
 export function injectAnimeBytesRating(parent: JQuery<HTMLElement>) {
@@ -33,7 +34,7 @@ export function injectAnimeBytesRating(parent: JQuery<HTMLElement>) {
               style="
                   font-weight: 700;
                   margin-left: 5px;
-                  color: #fff;
+                  color: ${siteColors.textPrimary};
                   line-height: 20px;
                   font-size: 13px;
               "
@@ -65,7 +66,7 @@ export function injectAnimeBytesRating(parent: JQuery<HTMLElement>) {
   myRatingDiv.append(`<br>`);
   // Votes
   const votes = $(
-    `<span style="color: gray;font-size: 12.5px;"></span>`
+    `<span style="color: ${siteColors.textSecondary};font-size: 12.5px;"></span>`
   ).appendTo(ratingContainer);
   // Stars
   $("#rating > #container_star")

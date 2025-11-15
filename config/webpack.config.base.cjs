@@ -1,6 +1,9 @@
 const path = require("path");
+const webpack = require("webpack");
 
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
+
+const siteTarget = process.env.SITE_TARGET || "ab";
 
 const webpackConfig = {
   resolve: {
@@ -36,7 +39,12 @@ const webpackConfig = {
       },
     ],
   },
-  plugins: process.env.npm_config_report ? [new BundleAnalyzerPlugin()] : [],
+  plugins: [
+    new webpack.DefinePlugin({
+      SITE_TARGET: JSON.stringify(siteTarget),
+    }),
+    ...(process.env.npm_config_report ? [new BundleAnalyzerPlugin()] : []),
+  ],
 };
 
 module.exports = webpackConfig;

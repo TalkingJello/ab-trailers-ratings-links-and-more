@@ -1,6 +1,8 @@
 import { UNIQUE } from "../constants";
 import { settings } from "../delicious";
 import { displayVotes } from "../helpers/formatVotes";
+import { siteColors } from "../helpers/ratingTextColors";
+import { site } from "../helpers/site";
 import { subscribeToAbScoreChange } from "../helpers/subscribeToAbScoreChange";
 import { Score, WithProvider } from "../providers/MetadataProvider";
 
@@ -37,7 +39,7 @@ export function injectAverageRating(
               style="
                   font-weight: 700;
                   margin-left: 5px;
-                  color: #fff;
+                  color: ${siteColors.textPrimary};
                   line-height: 20px;
                   font-size: 13px;
               "
@@ -57,37 +59,46 @@ export function injectAverageRating(
   ratingContainer.append("<br>");
   // Votes
   const votes = $(
-    `<span style="color: gray;font-size: 12.5px;"></span>`
+    `<span style="color: ${siteColors.textSecondary};font-size: 12.5px;"></span>`
   ).appendTo(ratingContainer);
 
   // Append to page
   parent.append(container);
 
-  setTimeout(
-    () =>
-      subscribeToAbScoreChange((abScore) => {
-        const averageRating =
-          scores.reduce((acc, { provider, rating }) => {
-            return acc + provider.getScoreWeightForAverage() * rating;
-          }, abScore.rating * settings.abScoreAverageWeight) /
-          scores
-            .filter((score) => score.votes > 0)
-            .reduce(
-              (acc, { provider }) => acc + provider.getScoreWeightForAverage(),
-              abScore.votes > 0 ? settings.abScoreAverageWeight : 0
-            );
-        const totalVotes = scores.reduce(
-          (acc, { votes }) => acc + votes,
-          abScore.votes
-        );
+  const updateRating = (abScore?: Score) => {
+    if (!abScore) {
+      abScore = { rating: 0, votes: 0, breakdownLink: "" };
+    }
 
-        rating.text(`Average: ${averageRating.toFixed(2)} / 10`);
-        votes.html(
-          `${displayVotes(totalVotes)} total votes<br>from <i>${
-            scores.length + (abScore.votes > 0 ? 1 : 0)
-          }</i> sources`
+    const averageRating =
+      scores.reduce((acc, { provider, rating }) => {
+        return acc + provider.getScoreWeightForAverage() * rating;
+      }, abScore.rating * settings.abScoreAverageWeight) /
+      scores
+        .filter((score) => score.votes > 0)
+        .reduce(
+          (acc, { provider }) => acc + provider.getScoreWeightForAverage(),
+          abScore.votes > 0 ? settings.abScoreAverageWeight : 0
         );
-      }),
-    1
-  );
+    const totalVotes = scores.reduce(
+      (acc, { votes }) => acc + votes,
+      abScore.votes
+    );
+
+    rating.text(`Average: ${averageRating.toFixed(2)} / 10`);
+    votes.html(
+      `${displayVotes(totalVotes)} total votes<br>from <i>${
+        scores.length + (abScore.votes > 0 ? 1 : 0)
+      }</i> sources`
+    );
+  };
+
+  if (site.ab) {
+    setTimeout(
+      () => subscribeToAbScoreChange((abScore) => updateRating(abScore)),
+      1
+    );
+  } else if (site.moe) {
+    updateRating();
+  }
 }
